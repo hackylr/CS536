@@ -37,27 +37,97 @@ public class P1
 	
 	private static void test_addDecl()
 	{
+		SymTable temp = new SymTable();
+		Sym sym_1 = new Sym("int");
 		
+		try
+		{
+			temp.addDecl("x", sym_1);
+			try
+			{
+				temp.addDecl("x", sym_1);
+			}
+			
+			catch(DuplicateSymException e)
+			{
+				System.out.println("Exception was caught properly");
+			}
+		}
+		
+		catch (Exception e)
+		{
+			System.out.println("addDecl() did not work");
+		}
 	}
 	
 	private static void test_addScope()
 	{
+		SymTable temp = new SymTable();
 		
+		try
+		{
+			temp.addScope();
+		}
+		
+		catch (Exception e)
+		{
+			System.out.println("addScope() did not work");
+		}
 	}
 	
 	private static void test_lookupLocal()
 	{
+		SymTable temp = new SymTable();
+		Sym sym_1 = new Sym("int");
 		
+		try
+		{
+			temp.addDecl("x", sym_1);
+			if(temp.lookupLocal("x") == sym_1)
+			{
+				System.out.println("lookupLocal() did work");
+			}
+		}
+		
+		catch (Exception e)
+		{
+			System.out.println("lookupLocal() did not work");
+		}
 	}
 	
 	private static void test_lookupGlobal()
 	{
+		SymTable temp = new SymTable();
+		Sym sym_1 = new Sym("int");
 		
+		try
+		{
+			temp.addDecl("x", sym_1);
+			if(temp.lookupLocal("x") == sym_1)
+			{
+				System.out.println("lookupLocal() did work");
+			}
+		}
+		
+		catch (Exception e)
+		{
+			System.out.println("lookupLocal() did not work");
+		}
 	}
 	
 	private static void test_removeScope()
 	{
+		SymTable temp = new SymTable();
 		
+		try
+		{
+			temp.removeScope();
+		}
+		
+		catch (Exception e)
+		{
+			System.out.println("removeScope() did not work");
+		}
 	}
 	
 	private static void test_print()
