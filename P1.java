@@ -62,6 +62,17 @@ public class P1
 	
 	private static void test_print()
 	{
+		SymTable temp = new SymTable();
+		
+		try
+		{
+			temp.print();
+		}
+		
+		catch (Exception e)
+		{
+			System.out.println("print() did not work");
+		}
 		
 	}
 }
