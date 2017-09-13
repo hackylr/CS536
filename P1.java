@@ -1,4 +1,3 @@
-
 public class P1 
 {
 	public static void main(String[] args)
@@ -12,7 +11,9 @@ public class P1
 		test_print();
 	}
 	
-	//Testing Sym class
+	/**
+	 * Tests the Sym class
+	 */
 	private static void test_Sym()
 	{
 		String[] tempList = {"int", "boolean", "char"};
@@ -35,10 +36,14 @@ public class P1
 		}
 	}
 	
+	/**
+	 * Tests the addDecl() method
+	 */
 	private static void test_addDecl()
 	{
 		SymTable temp = new SymTable();
 		Sym sym_1 = new Sym("int");
+		Sym sym_2 = null;
 		
 		try
 		{
@@ -53,6 +58,26 @@ public class P1
 				System.out.println("DuplicateSymException for addDecl() "
 						+ "was caught properly");
 			}
+			
+			try
+			{
+				temp.addDecl("x", sym_2);
+			}
+			
+			catch (NullPointerException e)
+			{
+				System.out.println("NullPointerException handled when sym is null");
+			}
+			
+			try
+			{
+				temp.addDecl(null, sym_1);
+			}
+			
+			catch (NullPointerException e)
+			{
+				System.out.println("NullPointerException handled when name is null");
+			}
 		}
 		
 		catch (Exception e)
@@ -61,6 +86,9 @@ public class P1
 		}
 	}
 	
+	/**
+	 * Tests the addScope() method
+	 */
 	private static void test_addScope()
 	{
 		SymTable temp = new SymTable();
@@ -76,6 +104,9 @@ public class P1
 		}
 	}
 	
+	/**
+	 * Tests the lookupLocal() method
+	 */
 	private static void test_lookupLocal()
 	{
 		SymTable temp = new SymTable();
@@ -113,6 +144,9 @@ public class P1
 		}
 	}
 	
+	/**
+	 * Tests the lookupGlobal() method
+	 */
 	private static void test_lookupGlobal()
 	{
 		SymTable temp = new SymTable();
@@ -150,6 +184,9 @@ public class P1
 		}
 	}
 	
+	/**
+	 * Tests the removeScope() method
+	 */
 	private static void test_removeScope()
 	{
 		SymTable temp = new SymTable();
@@ -175,6 +212,9 @@ public class P1
 		}
 	}
 	
+	/**
+	 * Tests the print() method
+	 */
 	private static void test_print()
 	{
 		SymTable temp = new SymTable();
