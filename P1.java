@@ -50,7 +50,8 @@ public class P1
 			
 			catch(DuplicateSymException e)
 			{
-				System.out.println("Exception was caught properly");
+				System.out.println("DuplicateSymException for addDecl() "
+						+ "was caught properly");
 			}
 		}
 		
@@ -87,6 +88,23 @@ public class P1
 			{
 				System.out.println("lookupLocal() did work");
 			}
+			
+			try
+			{
+				temp.removeScope();
+				if(temp.lookupLocal("x") == sym_1)
+				{
+					System.out.println("This statement should not appear as"
+							+ "lookupLocal should fail.");
+				}
+				
+			}
+			
+			catch (EmptySymTableException e)
+			{
+				System.out.println("EmptySymTableExecption for lookupLocal() "
+						+ "was caught properly.");
+			}
 		}
 		
 		catch (Exception e)
@@ -103,15 +121,32 @@ public class P1
 		try
 		{
 			temp.addDecl("x", sym_1);
-			if(temp.lookupLocal("x") == sym_1)
+			if(temp.lookupGlobal("x") == sym_1)
 			{
-				System.out.println("lookupLocal() did work");
+				System.out.println("lookupGlobal() did work");
+			}
+			
+			try
+			{
+				temp.removeScope();
+				if(temp.lookupGlobal("x") == sym_1)
+				{
+					System.out.println("This statement should not appear as"
+							+ "lookupGlobal should fail.");
+				}
+				
+			}
+			
+			catch (EmptySymTableException e)
+			{
+				System.out.println("EmptySymTableExecption for lookupGlobal() "
+						+ "was caught properly.");
 			}
 		}
 		
 		catch (Exception e)
 		{
-			System.out.println("lookupLocal() did not work");
+			System.out.println("lookupGlobal() did not work");
 		}
 	}
 	
@@ -122,6 +157,16 @@ public class P1
 		try
 		{
 			temp.removeScope();
+			try
+			{
+				temp.removeScope();
+			}
+			
+			catch (EmptySymTableException e)
+			{
+				System.out.println("EmptySymTableExecption for removeScope() "
+						+ "was caught properly.");
+			}
 		}
 		
 		catch (Exception e)
@@ -146,4 +191,3 @@ public class P1
 		
 	}
 }
- 
