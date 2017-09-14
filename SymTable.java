@@ -6,15 +6,30 @@ public class SymTable
 {
 	private List<HashMap<String, Sym>> symList = new LinkedList<HashMap<String, Sym>>();
 	
-	//Constructor
+	/**
+	 * Constructor, initializes the SymTable's List field to contain
+	 * a single, empty HashMap
+	 */
 	public SymTable()
 	{
 		symList.add(new HashMap<String, Sym>());
 	}
 	
-	//Error checking
+	/**
+	 * Adding the first HashMap in the list.
+	 * If either parameter is null, throws exception
+	 * Checks for an empty list as well as duplicates
+	 *
+	 * @param String name: name of the variable
+	 * @param Sym sym: type of the identifier
+	 */
 	public void addDecl(String name, Sym sym) throws DuplicateSymException, EmptySymTableException
 	{
+		if(name == null || sym == null)
+		{
+			throw new NullPointerException();
+		}
+		
 		if (symList.isEmpty())
 		{
 			throw new EmptySymTableException();
@@ -29,10 +44,14 @@ public class SymTable
 		currList.put(name, sym);
 	}
 	
-	//Not sure if need to check if symList is empty or not first, just did so as a precaution
+	/**
+	 * Adds a new empty HashMap to the front of the list
+	 * Checks if list is empty first or not
+	 *)
+	 */
 	public void addScope()
 	{
-		//Check if symList is empty or not first
+		//Check if symList is empty
 		if (symList.isEmpty())
 		{
 			symList.add(new HashMap<String, Sym>());
@@ -45,6 +64,12 @@ public class SymTable
 		}
 	}
 	
+	/**
+	 * Looks up certain names as the key in the first HashMap
+	 *
+	 * @param String name: name of the variable used to search the list
+	 * @return Returns associated sym (identifier) or null
+	 */
 	public Sym lookupLocal(String name) throws EmptySymTableException
 	{
 		if (symList.isEmpty())
@@ -62,6 +87,7 @@ public class SymTable
 //			return null;
 //		}
 		
+		//Focuses only on the first one
 		if (symList.get(0).containsKey(name))
 		{
 			return symList.get(0).get(name);
@@ -73,6 +99,12 @@ public class SymTable
 		}
 	}
 	
+	/**
+	 * Looks up certain names as the key in any HashMap
+	 *
+	 * @param String name: variable used to search the lists
+	 * @return Returns first associated sym (identifier) or null
+	 */
 	public Sym lookupGlobal(String name) throws EmptySymTableException
 	{
 		if (symList.isEmpty())
@@ -80,6 +112,7 @@ public class SymTable
 			throw new EmptySymTableException();
 		}
 		
+		//Loops through the entire list
 		for (int i = 0; i < symList.size(); i++)
 		{
 			if (symList.get(i).containsKey(name))
@@ -91,6 +124,11 @@ public class SymTable
 		return null;
 	}
 	
+	/**
+	 * Removes the HashMap from the front of the list
+	 * Checks if the list is empty first or not, throws exception if so
+	 *
+	 */
 	public void removeScope() throws EmptySymTableException
 	{
 		if (symList.isEmpty())
@@ -101,11 +139,16 @@ public class SymTable
 		symList.remove(0);
 	}
 	
+	/**
+	 * Debugging method, prints out each HashMap as a String
+	 *
+	 */
 	public void print()
 	{
 		 System.out.print("\nSym Table\n");
 		 
-	     for (int i = 0; i < symList.size(); i++) 
+	     //Looping through each HashMap
+		 for (int i = 0; i < symList.size(); i++) 
 	     {
 	         System.out.println(symList.get(i).toString());
 	     }
