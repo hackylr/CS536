@@ -77,16 +77,6 @@ public class SymTable
 			throw new EmptySymTableException();
 		}
 		
-//		HashMap<String, Sym> currList = symList.get(0);
-//		if(currList.containsKey(name))
-//		{
-//			return symList.get(0).get(name);
-//		}
-//		else
-//		{
-//			return null;
-//		}
-		
 		//Focuses only on the first one
 		if (symList.get(0).containsKey(name))
 		{
