@@ -77,14 +77,11 @@ return new Symbol(sym.EOF);
 
 %%
 
-
-//Whitespace********************************************************************************************		  
-{WHITESPACE}+  
-			{ 
+      	  
+{WHITESPACE}+   { 
 				CharNum.num += yytext().length(); 
 			}
-		  
-//Reserved Words********************************************************************************************
+
 "bool"		{	
 				Symbol S = new Symbol(sym.BOOL,new TokenVal(yyline+1, CharNum.num));
 				CharNum.num += yytext().length();
@@ -99,7 +96,7 @@ return new Symbol(sym.EOF);
 			
 "void"		{	
 				Symbol S = new Symbol(sym.VOID,new TokenVal(yyline+1, CharNum.num));
-				CharNum.num += ytext().length();
+				CharNum.num += yytext().length();
 				return S;	
 			}
 			
@@ -111,7 +108,7 @@ return new Symbol(sym.EOF);
 			
 "false"		{	
 				Symbol S = new Symbol(sym.FALSE,new TokenVal(yyline+1, CharNum.num));
-				CharNum.num +=y ytext().length();
+				CharNum.num += yytext().length();
 				return S;	
 			}
 			
@@ -157,7 +154,6 @@ return new Symbol(sym.EOF);
 				return S;	
 			}
 			
-//Identifier********************************************************************************************
 ({LETTER}|{UNDERSCORE})+({LETTER}|{UNDERSCORE}|{DIGIT})* 
 			{
 				String val = new String(yytext());
@@ -166,9 +162,7 @@ return new Symbol(sym.EOF);
 				return S;
 			}
 
-//String Literal********************************************************************************************
-//I AM NOT SURE ABOUT THIS LOGIC
-{DOUBLEQUOTE}(({BACKSLASH}[nt'\"?\])|([^\n\"\]))*{DOUBLEQUOTE}	
+{DOUBLEQUOTE}(({BACKSLASH}[nt'\"?\])|([^\n\"\\]))*{DOUBLEQUOTE}	
 			{
 				String val = new String(yytext());
 				Symbol S = new Symbol(sym.STRINGLITERAL, new StrLitTokenVal(yyline+1,CharNum.num,val));
@@ -176,15 +170,14 @@ return new Symbol(sym.EOF);
 				return S;
 			}
 			
-//Bad String Literal********************************************************************************************
-{DQUOTE}(({BACKSL}[^nt'\"?\\])|([^\n\"\\]))*{DQUOTE}	
+
+{DOUBLEQUOTE}(({BACKSLASH}[^nt'\"?\\])|([^\n\"\\]))*{DOUBLEQUOTE}	
 			{
 				//String that ends bad
 				ErrMsg.fatal(yyline+1, CharNum.num,"string literal with bad escaped character ignored");
 				CharNum.num += yytext().length();
 			}
 
-//Integer Literal********************************************************************************************			
 {DIGIT}+  	{ 
 				// NOTE: the following computation of the integer value does NOT
 				//       check for overflow.  This must be changed.
@@ -195,7 +188,7 @@ return new Symbol(sym.EOF);
 				// INSERT CODE HERE TO CHECK FOR BAD VALUE -- SEE ERRORS AND WARNINGS BELOW
 				if(d>Integer.MAX_VALUE)
 				{
-					val = Integer.MAX_VALUE
+					val = Integer.MAX_VALUE;
 					ErrMsg.warn(yyline+1, CharNum.num, "integer literal too large; using max value");	
 				}
 				else
@@ -208,8 +201,9 @@ return new Symbol(sym.EOF);
 				CharNum.num += yytext().length();
 				return S;
 			}		
+
 			
-//Symbols********************************************************************************************
+
 \n        	{ 
 				CharNum.num = 1; 
 			}
@@ -363,8 +357,7 @@ return new Symbol(sym.EOF);
 				CharNum.num++;
 				return S;
 			}
-    
-//Illegal Characters    
+        
 .         	{ 
 				ErrMsg.fatal(yyline+1, CharNum.num, "illegal character ignored: " + yytext());
 				CharNum.num++;

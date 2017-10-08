@@ -84,12 +84,15 @@ public class P2 {
                 outFile.println("return");
                 break;
             case sym.ID:
+				        outFile.println("ID");
                 outFile.println(((IdTokenVal)token.value).idVal);
                 break;
-            case sym.INTLITERAL:  
+            case sym.INTLITERAL: 
+				        outFile.println("IntLiteral");
                 outFile.println(((IntLitTokenVal)token.value).intVal);
                 break;
-            case sym.STRINGLITERAL: 
+            case sym.STRINGLITERAL:
+				        outFile.println("StringLiteral");
                 outFile.println(((StrLitTokenVal)token.value).strVal);
                 break;    
             case sym.LCURLY:
