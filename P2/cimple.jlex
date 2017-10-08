@@ -175,6 +175,14 @@ return new Symbol(sym.EOF);
 				CharNum.num += yytext().length();
 				return S;
 			}
+			
+//Bad String Literal********************************************************************************************
+{DQUOTE}(({BACKSL}[^nt'\"?\\])|([^\n\"\\]))*{DQUOTE}	
+			{
+				//String that ends bad
+				ErrMsg.fatal(yyline+1, CharNum.num,"string literal with bad escaped character ignored");
+				CharNum.num += yytext().length();
+			}
 
 //Integer Literal********************************************************************************************			
 {DIGIT}+  	{ 
