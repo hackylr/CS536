@@ -62,7 +62,11 @@ WHITESPACE=   [\040\t]
 LETTER= 	  [a-zA-Z]
 UNDERSCORE=   [_]
 DOUBLEQUOTE=  [\"]
-BACKSLASH= 	  [\]
+BACKSLASH= 	  [\\]
+POUND=		  [#]
+ESCAPECHAR=   [nt'\"?\\]
+NOTESCAPECHAR=[^nt'\"?\\]
+SINGLECHAR=   [^\n\"\\]
 
 
 %implements java_cup.runtime.Scanner
@@ -78,7 +82,8 @@ return new Symbol(sym.EOF);
 %%
 
       	  
-{WHITESPACE}+   { 
+{WHITESPACE}+   
+			{ 
 				CharNum.num += yytext().length(); 
 			}
 
@@ -162,7 +167,7 @@ return new Symbol(sym.EOF);
 				return S;
 			}
 
-{DOUBLEQUOTE}(({BACKSLASH}[nt'\"?\])|([^\n\"\\]))*{DOUBLEQUOTE}	
+{DOUBLEQUOTE}(({BACKSLASH}{ESCAPECHAR})|{SINGLECHAR})*{DOUBLEQUOTE}	
 			{
 				String val = new String(yytext());
 				Symbol S = new Symbol(sym.STRINGLITERAL, new StrLitTokenVal(yyline+1,CharNum.num,val));
@@ -170,12 +175,22 @@ return new Symbol(sym.EOF);
 				return S;
 			}
 			
-
-{DOUBLEQUOTE}(({BACKSLASH}[^nt'\"?\\])|([^\n\"\\]))*{DOUBLEQUOTE}	
+{DOUBLEQUOTE}(({BACKSLASH}{NOTESCAPECHAR})|{SINGLECHAR})*{DOUBLEQUOTE}	
 			{
-				//String that ends bad
 				ErrMsg.fatal(yyline+1, CharNum.num,"string literal with bad escaped character ignored");
-				CharNum.num += yytext().length();
+				CharNum.num = 1;
+			}
+			
+{DOUBLEQUOTE}(({BACKSLASH}{ESCAPECHAR})|{SINGLECHAR})*$
+			{
+				ErrMsg.fatal(yyline+1, CharNum.num,"unterminated string literal ignored");
+				CharNum.num = 1;
+			}
+			
+{DOUBLEQUOTE}({SINGLECHAR})*({BACKSLASH}{NOTESCAPECHAR})({BACKSLASH}{ESCAPECHAR}|{SINGLECHAR})*$
+			{
+				ErrMsg.fatal(yyline+1, CharNum.num,"unterminated string literal with bad escaped character ignored");
+				CharNum.num = 1;
 			}
 
 {DIGIT}+  	{ 
@@ -202,7 +217,10 @@ return new Symbol(sym.EOF);
 				return S;
 			}		
 
-			
+({BACKSLASH}|{POUND})(.)*[\n]*  
+			{
+				CharNum.num = 1;
+			}
 
 \n        	{ 
 				CharNum.num = 1; 
@@ -252,25 +270,25 @@ return new Symbol(sym.EOF);
 
 "<<"       	{ 
 				Symbol S = new Symbol(sym.COUT, new TokenVal(yyline+1, CharNum.num));
-				CharNum.num++;
+				CharNum.num += 2;
 				return S;
 			}
 
 ">>"       	{ 
 				Symbol S = new Symbol(sym.CIN, new TokenVal(yyline+1, CharNum.num));
-				CharNum.num++;
+				CharNum.num += 2;
 				return S;
 			}
 			
 "++"       	{ 
 				Symbol S = new Symbol(sym.PLUSPLUS, new TokenVal(yyline+1, CharNum.num));
-				CharNum.num++;
+				CharNum.num += 2;
 				return S;
 			}
 			
 "--"       	{ 
 				Symbol S = new Symbol(sym.MINUSMINUS, new TokenVal(yyline+1, CharNum.num));
-				CharNum.num++;
+				CharNum.num += 2;
 				return S;
 			}
 			
@@ -306,25 +324,25 @@ return new Symbol(sym.EOF);
 			
 "&&"       	{ 
 				Symbol S = new Symbol(sym.AND, new TokenVal(yyline+1, CharNum.num));
-				CharNum.num++;
+				CharNum.num += 2;
 				return S;
 			}
 			
 "||"       	{ 
 				Symbol S = new Symbol(sym.OR, new TokenVal(yyline+1, CharNum.num));
-				CharNum.num++;
+				CharNum.num += 2;
 				return S;
 			}
 			
 "=="       	{ 
 				Symbol S = new Symbol(sym.EQUALS, new TokenVal(yyline+1, CharNum.num));
-				CharNum.num++;
+				CharNum.num += 2;
 				return S;
 			}
 			
 "!="       	{ 
 				Symbol S = new Symbol(sym.NOTEQUALS, new TokenVal(yyline+1, CharNum.num));
-				CharNum.num++;
+				CharNum.num += 2;
 				return S;
 			}
 			
@@ -342,13 +360,13 @@ return new Symbol(sym.EOF);
 			
 "<="       	{ 
 				Symbol S = new Symbol(sym.LESSEQ, new TokenVal(yyline+1, CharNum.num));
-				CharNum.num++;
+				CharNum.num += 2;
 				return S;
 			}
 			
 ">="       	{ 
 				Symbol S = new Symbol(sym.GREATEREQ, new TokenVal(yyline+1, CharNum.num));
-				CharNum.num++;
+				CharNum.num += 2;
 				return S;
 			}
 			
