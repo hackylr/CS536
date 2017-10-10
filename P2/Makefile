@@ -48,3 +48,7 @@ clean:
 
 cleantest:
 	rm -f allTokens.out
+
+cleanall:
+	rm -f *~ *.class cimple.jlex.java
+	rm -f allTokens.out

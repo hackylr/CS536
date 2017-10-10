@@ -63,6 +63,7 @@ LETTER= 	  [a-zA-Z]
 UNDERSCORE=   [_]
 DOUBLEQUOTE=  [\"]
 BACKSLASH= 	  [\\]
+FORESLASH= 	[//]
 POUND=		  [#]
 ESCAPECHAR=   [nt'\"?\\]
 NOTESCAPECHAR=[^nt'\"?\\]
@@ -217,7 +218,7 @@ return new Symbol(sym.EOF);
 				return S;
 			}		
 
-({BACKSLASH}|{POUND})(.)*[\n]*  
+(("//")|{POUND})(.)*[\n]*$  
 			{
 				CharNum.num = 1;
 			}
@@ -269,13 +270,13 @@ return new Symbol(sym.EOF);
 			}
 
 "<<"       	{ 
-				Symbol S = new Symbol(sym.COUT, new TokenVal(yyline+1, CharNum.num));
+				Symbol S = new Symbol(sym.WRITE, new TokenVal(yyline+1, CharNum.num));
 				CharNum.num += 2;
 				return S;
 			}
 
 ">>"       	{ 
-				Symbol S = new Symbol(sym.CIN, new TokenVal(yyline+1, CharNum.num));
+				Symbol S = new Symbol(sym.READ, new TokenVal(yyline+1, CharNum.num));
 				CharNum.num += 2;
 				return S;
 			}

@@ -84,15 +84,15 @@ public class P2 {
                 outFile.println("return");
                 break;
             case sym.ID:
-				        outFile.println("ID");
+				    
                 outFile.println(((IdTokenVal)token.value).idVal);
                 break;
             case sym.INTLITERAL: 
-				        outFile.println("IntLiteral");
+				        
                 outFile.println(((IntLitTokenVal)token.value).intVal);
                 break;
             case sym.STRINGLITERAL:
-				        outFile.println("StringLiteral");
+				      
                 outFile.println(((StrLitTokenVal)token.value).strVal);
                 break;    
             case sym.LCURLY:
@@ -167,11 +167,11 @@ public class P2 {
             case sym.GREATEREQ:
                 outFile.println(">=");
                 break;
-			case sym.ASSIGN:
+	    case sym.ASSIGN:
                 outFile.println("=");
                 break;
-			default:
-				outFile.println("UNKNOWN TOKEN");
+	    default:
+		outFile.println("UNKNOWN TOKEN");
             } // end switch
 
             token = scanner.next_token();
