@@ -37,7 +37,15 @@ ErrMsg.class: ErrMsg.java
 ###
 test:
 	java -cp $(CP) P2 
+
+difftest:
+	java -cp $(CP) P2 
 	diff allTokens.in allTokens.out
+	diff resAndString.in resAndString.out
+	diff stringLits.in stringLits.out
+	diff charSyms.in charSyms.out
+	diff moreErrors.in moreErrors.out
+	diff badStringLits.in badStringLits.out
 
 ###
 # clean up
@@ -47,8 +55,8 @@ clean:
 	rm -f *~ *.class cimple.jlex.java
 
 cleantest:
-	rm -f allTokens.out
+	rm -f allTokens.out resAndString.out stringLits.out charSyms.out badStringLits.out moreErrors.out
 
 cleanall:
 	rm -f *~ *.class cimple.jlex.java
-	rm -f allTokens.out
+	rm -f allTokens.out resAndString.out stringLits.out charSyms.out badStringLits.out moreErrors.out
