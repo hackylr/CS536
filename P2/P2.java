@@ -13,9 +13,9 @@ public class P2 {
     public static void main(String[] args) throws IOException {
                                            // exception may be thrown by yylex
         // test all tokens
-        testTokens("allTokens.in", "allTokens.out");
-        CharNum.num = 1;
         testTokens("resAndString.in", "resAndString.out");
+	CharNum.num = 1; 
+        testTokens("idAndIntLits.in", "idAndIntLits.out");
 	CharNum.num = 1; 
         testTokens("stringLits.in", "stringLits.out");
 	CharNum.num = 1; 
@@ -25,8 +25,8 @@ public class P2 {
 	CharNum.num = 1; 
         testTokens("moreErrors.in", "moreErrors.out");
 	CharNum.num = 1; 
-       
-         // ADD CALLS TO OTHER TEST METHODS HERE
+        testTokens("eof.txt", "eof.out");
+	CharNum.num = 1; 
     }
 
      /*

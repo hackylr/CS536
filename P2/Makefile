@@ -40,12 +40,13 @@ test:
 
 difftest:
 	java -cp $(CP) P2 
-	diff allTokens.in allTokens.out
 	diff resAndString.in resAndString.out
+	diff idAndIntLits.in idAndIntLits.out
 	diff stringLits.in stringLits.out
 	diff charSyms.in charSyms.out
-	diff moreErrors.in moreErrors.out
-	diff badStringLits.in badStringLits.out
+	diff eof.exp eof.out
+	diff moreErrors.exp moreErrors.out
+	diff badStringLits.exp badStringLits.out
 
 ###
 # clean up
@@ -55,8 +56,8 @@ clean:
 	rm -f *~ *.class cimple.jlex.java
 
 cleantest:
-	rm -f allTokens.out resAndString.out stringLits.out charSyms.out badStringLits.out moreErrors.out
+	rm -f resAndString.out idAndIntLits.out stringLits.out charSyms.out badStringLits.out moreErrors.out eof.out
 
 cleanall:
 	rm -f *~ *.class cimple.jlex.java
-	rm -f allTokens.out resAndString.out stringLits.out charSyms.out badStringLits.out moreErrors.out
+	rm -f resAndString.out idAndIntLits.out stringLits.out charSyms.out badStringLits.out moreErrors.out eof.out
