@@ -1,32 +1,79 @@
+///////////////////////////////////////////////////////////////////////////////
+//                   ALL STUDENTS COMPLETE THESE SECTIONS
+// Title:            P2.java
+// Files:            badStringLits.exp, badStringLits.in, charSyms.in, 
+// cimple.jlex, comments.exp, comments.in, eof.exp, eof.txt, ErrMsg.java, 
+// goodTokens.exp, goodTokens.in, idAndIntLits.in, Makefile, moreErrors.exp, 
+// moreErrors.in, P2.java, P2.out,  README.txt, resAndString.in, stringLits.in,
+// sym.java
+
+// Semester:         CS536 Fall 2017
+//
+// Author:           Damon Francisco
+// Email:            dfrancisco@wisc.edu
+// CS Login:         damon
+// Lecturer's Name:  Aws Albarghouthi
+//
+//////////////////// PAIR PROGRAMMERS COMPLETE THIS SECTION ////////////////////
+//
+// Pair Partner:     Avery Chen
+// Email:            agchen@wisc.edu
+// CS Login:         avery
+// Lecturer's Name:  Aws Albarghouthi
+//
+//////////////////// STUDENTS WHO GET HELP FROM OTHER THAN THEIR PARTNER //////
+//
+// Online sources:   Piazza, Stack Overflow
+//////////////////////////// 80 columns wide //////////////////////////////////
+
 import java.util.*;
 import java.io.*;
 import java_cup.runtime.*;  // defines Symbol
 
-
 /**
  * This program is to be used to test the Scanner.
- * This version is set up to test all tokens, but more code is needed to test 
- * other aspects of the scanner (e.g., input that causes errors, character 
- * numbers, values associated with tokens)
+ * This version is set up to all the tokens. It tests valid reserve words,
+ * identifiers, String literals, 
  */
 public class P2 {
     public static void main(String[] args) throws IOException {
-                                           // exception may be thrown by yylex
-        // test all tokens
-        testTokens("resAndString.in", "resAndString.out");
+        // exception may be thrown by yylex
+        
+	//1. Tests valid reserve words and String literals
+        testTokens("resAndId.in", "resAndId.out", false);
 	CharNum.num = 1; 
-        testTokens("idAndIntLits.in", "idAndIntLits.out");
+
+        //2. Tests valid identifiers and integer literals
+        testTokens("idAndIntLits.in", "idAndIntLits.out", false);
 	CharNum.num = 1; 
-        testTokens("stringLits.in", "stringLits.out");
+        
+	//3. Tests valid String literals
+	testTokens("stringLits.in", "stringLits.out", false);
 	CharNum.num = 1; 
-        testTokens("badStringLits.in", "badStringLits.out");
+        
+	//4. Tests invalid String literals
+	testTokens("badStringLits.in", "badStringLits.out", false);
 	CharNum.num = 1; 
-        testTokens("charSyms.in", "charSyms.out");
+
+	//5. Tests valid one to two character symbols
+        testTokens("charSyms.in", "charSyms.out", false);
 	CharNum.num = 1; 
-        testTokens("moreErrors.in", "moreErrors.out");
+
+	//6. Tests other errors such as illegal characters and bad integer lits
+        testTokens("moreErrors.in", "moreErrors.out", false);
 	CharNum.num = 1; 
-        testTokens("eof.txt", "eof.out");
-	CharNum.num = 1; 
+
+	//7. Tests end of file terminating character 
+        testTokens("eof.txt", "eof.out", false);
+	CharNum.num = 1;
+
+	//8. Tests to make sure comments are ignored
+        testTokens("comments.in", "comments.out", false);
+	CharNum.num = 1;
+
+	//9. Prints line numbers and characters for all valid tokens
+        testTokens("goodTokens.in", "goodTokens.out", true);
+	CharNum.num = 1;	 
     }
 
      /*
@@ -38,7 +85,8 @@ public class P2 {
      * correctness of the scanner by comparing the input and output files
      * (e.g., using a 'diff' command).
      */
-    private static void testTokens(String in, String out) throws IOException {
+    private static void testTokens(String in, String out, boolean print)
+	throws IOException {
         // open input and output files
         FileReader inFile = null;
         PrintWriter outFile = null;
@@ -57,15 +105,21 @@ public class P2 {
         Yylex scanner = new Yylex(inFile);
         Symbol token = scanner.next_token();
         while (token.sym != sym.EOF) {
-	    parseToken(token, outFile);
+	    parseToken(token, outFile, print);
             token = scanner.next_token();
         } // end while
         outFile.close();
     }
 
-    private static void parseToken(Symbol token, PrintWriter outFile) {
-            switch (token.sym) {
-              case sym.BOOL:
+    private static void parseToken(Symbol token, PrintWriter outFile,
+	boolean print) {
+           if (print) {
+	     outFile.print("Line: "+ ((TokenVal)token.value).linenum+
+		",Char: "+ ((TokenVal)token.value).charnum+" ");	 
+	   }
+
+	   switch (token.sym) {
+	      case sym.BOOL:
                 outFile.println("bool"); 
                 break;
 	      case sym.INT:
@@ -101,7 +155,7 @@ public class P2 {
               case sym.RETURN:
                 outFile.println("return");
                 break;
-              case sym.ID:				    
+              case sym.ID:
                 outFile.println(((IdTokenVal)token.value).idVal);
                 break;
               case sym.INTLITERAL: 			        
@@ -188,6 +242,5 @@ public class P2 {
 	      default:
 		outFile.println("UNKNOWN TOKEN");
             } // end switch
-
     }
 }

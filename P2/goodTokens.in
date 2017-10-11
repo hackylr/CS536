@@ -1,0 +1,56 @@
+This is to show line and char nums
+bool
+boolbool
+iffffif
+if
+true false
+true
+whilestructcincout
+while
+struct
+cin
+cout
+void
+voidvoid
+int
+else
+intelse
+identifier
+_identifier
+0
+137228
+""
+"&!88"
+"use \n to denote a newline character"
+"include a quote like this \" and a backslash like this \\"
+"a"
+"\t\n"
+"'"
+"\'"
+"\?"
+"\""
+{
+}
+(
+)
+;
+,
+.
+<<
+>>
+++
+--
++
+-
+*
+/
+!
+&&
+||
+==
+!=
+<
+>
+<=
+>=
+=
