@@ -1,0 +1,182 @@
+/**********************************************************************
+ Java CUP specification for a parser for cimple programs
+ **********************************************************************/
+
+import java_cup.runtime.*;
+import java.util.*;
+
+/* The code below redefines method syntax_error to give better error messages
+ * than just "Syntax error"
+ */
+parser code {:
+
+public void syntax_error(Symbol currToken) {
+    if (currToken.value == null) {
+        ErrMsg.fatal(0,0, "Syntax error at end of file");
+    }
+    else {
+        ErrMsg.fatal(((TokenVal)currToken.value).linenum,
+                     ((TokenVal)currToken.value).charnum,
+                     "Syntax error");
+    }
+    System.exit(-1);
+}
+:};
+
+
+/* Terminals (tokens returned by the scanner) 
+ *
+ * NOTE: You will need to make changes here.
+ */
+terminal                INT;
+terminal                BOOL;
+terminal                VOID;
+terminal                TRUE;
+terminal                FALSE;
+terminal                STRUCT;
+terminal                CIN;
+terminal                COUT;
+terminal                IF;
+terminal                ELSE;
+terminal                WHILE;
+terminal                RETURN;
+terminal IdTokenVal     ID;
+terminal IntLitTokenVal INTLITERAL;
+terminal StrLitTokenVal STRINGLITERAL;
+terminal                LCURLY;
+terminal                RCURLY;
+terminal                LPAREN;
+terminal                RPAREN;
+terminal                SEMICOLON;
+terminal                COMMA;
+terminal                DOT;
+terminal                WRITE;
+terminal                READ;
+terminal                PLUSPLUS;
+terminal                MINUSMINUS;
+terminal                PLUS;
+terminal                MINUS;
+terminal                TIMES;
+terminal                DIVIDE;
+terminal                NOT;
+terminal                AND;
+terminal                OR;
+terminal                EQUALS;
+terminal                NOTEQUALS;
+terminal                LESS;
+terminal                GREATER;
+terminal                LESSEQ;
+terminal                GREATEREQ;
+terminal                ASSIGN;
+
+
+/* Nonterminals
+ *
+ * NOTE: You will need to add more nonterminals to this list as you
+ *       add productions to the grammar below.
+ * 
+ */
+non terminal ProgramNode      program;
+non terminal LinkedList       declList;
+non terminal DeclNode         decl;
+non terminal VarDeclNode      varDecl;
+non terminal FnDeclNode	      fnDecl;
+non terminal StructDeclNode   structDecl;
+non terminal FormalsListNode  formalsList;
+non terminal FormalDeclNode   formalDecl;
+non terminal StmtListNode     stmtList;
+non terminal StmtNode	      stmt;
+non terminal ExpNode	      exp;
+non terminal FnBodyNode	      fnBody;
+non terminal TypeNode         type;
+non terminal IdNode           id;
+ 
+ 
+/* NOTE: Add precedence and associativity declarations here */
+
+
+start with program;
+
+
+/* Grammar with actions
+ *
+ * NOTE: add more grammar rules below
+ */
+program         ::= declList: d
+                {: RESULT = new ProgramNode(new DeclListNode(d));
+                :}
+                ;
+
+declList        ::= declList:dl decl:d
+                {: dl.addLast(d);
+                   RESULT = dl;
+                :}
+                | /* epsilon */
+                {: RESULT = new LinkedList<DeclNode>();
+                :}
+                ;
+
+decl            ::= varDecl:v
+                {: RESULT = v;
+                :}
+		| fnDecl:f
+		{: RESULT = f;
+		:}
+		| structDecl:s
+		{: RESULT = s;
+		:}
+                ;
+
+varDecl         ::= type:t id:i SEMICOLON
+                {: RESULT = new VarDeclNode(t, i, VarDeclNode.NOT_STRUCT);
+                :}
+		| STRUCT:s id:i1 id:i2 SEMICOLON
+		{: RESULT = new VarDeclNode(s, i1, i2);
+		:}
+                ;
+
+fnDecl		::= type:t id:i formals:f fnBody:fn
+		{: RESULT = new FnDeclNode (t, i, f, fn);
+		:}
+		;
+
+formalsList 	::= formalDecl: fd
+		{: fl.addLast(fd);
+		   RESULT = fl;
+		:}
+		| formalDecl: fd COMMA formalsList: fl
+		{: fl.addLast(fd);
+		   RESULT = fl;
+		:}
+		;
+
+formalDecl	::= type:t id: i
+		{: RESULT = new FormalDeclNode(t, i);
+		:}
+		;
+
+stmtList	::= stmtList:sl stmt:s
+		{: sl.addLast(s);
+		   RESULT = sl;
+		:}
+                | /* epsilon */
+                {: RESULT = new LinkedList<StmtNode>();
+                :}
+		;
+ 
+type            ::= INT
+                {: RESULT = new IntNode();
+                :}
+		| BOOL:b
+		{: RESULT = new BoolNode(); 
+		:}
+		| VOID:v
+		{: RESULT = new VoidNode(); 
+		:}
+                ;
+
+id              ::= ID:i
+                {: RESULT = new IdNode(i.linenum, i.charnum, i.idVal);
+                :}
+                ;
+				
