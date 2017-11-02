@@ -1,2 +1,24 @@
+// TypeNode subclasses
 int x;
 int y;
+bool null;
+void hello;
+#struct a;
+#int z = 4 + 3;
+
+// Non empty function body
+int main() { if (b == -1) { x = 4+3*5-y; while (c) { y = y*2+x; } } else { x = 0; } return 0; }
+
+// Empty function body
+void hello() {}
+
+// ExpNode subclasses that aren't unary or binary
+
+# Unary or BinaryExpNode subclasses not tested in main
+
+// StructDeclNode
+
+#StmtNodes not test in main
+
+# Might be null in ast.java?
+
