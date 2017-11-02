@@ -90,7 +90,7 @@ non terminal FormalDeclNode	formalDecl;
 non terminal LinkedList		stmtList;
 non terminal StmtNode		stmt;
 non terminal FnBodyNode		fnBody;
-non terminal AssignStmtNode     assignExp;
+non terminal AssignNode     assignExp;
 non terminal ExpNode		exp;
 non terminal ExpNode		term;
 non terminal CallExpNode	fncall;
@@ -224,7 +224,7 @@ stmtList	::= stmtList:sl	stmt:s
 		;
 
 stmt		::= assignExp:a_e SEMICOLON
-		{: RESULT = a_e;
+		{: RESULT = new AssignStmtNode(a_e);
 		:}
                 | loc:l PLUSPLUS SEMICOLON
 		{: RESULT = new PostIncStmtNode(l);
