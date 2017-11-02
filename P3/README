@@ -1,1 +1,14 @@
+README for CS536 Program 3
 
+Members: Avery Chen, Damon Francisco
+CS Login: avery, damon
+
+Compiling the program:
+- command: make
+
+Runnning the test:
+- command: make test
+
+test.cimple includes our tests and test.out is our generated file
+
+This was completed using the provided simpler make version
