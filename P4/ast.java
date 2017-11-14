@@ -134,7 +134,7 @@ class ProgramNode extends ASTnode {
      */
     public void nameAnalysis(SymTable symTab) {
         //SymTable symTab = new SymTable();
-		myDeclList.nameAnalysis(symTab);
+	myDeclList.nameAnalysis(symTab);
     }
 
     public void unparse(PrintWriter p, int indent) {
@@ -219,7 +219,7 @@ class FnBodyNode extends ASTnode {
     public void nameAnalysis(SymTable symTab){
 	myDeclList.nameAnalysis(symTab);
 	myStmtList.nameAnalysis(symTab);
-    }		
+    }	
 
     public void unparse(PrintWriter p, int indent) {
         myDeclList.unparse(p, indent);
@@ -340,8 +340,14 @@ class FnDeclNode extends DeclNode {
     public void nameAnalysis(SymTable symTab){
 	myType.nameAnalysis(symTab);
 	myId.nameAnalysis(symTab);
+	symTab.addScope();
 	myFormalsList.nameAnalysis(symTab);
 	myBody.nameAnalysis(symTab);
+
+	try {
+	   symTab.removeScope();
+	//TODO: Add message?
+	} catch (EmptySymTableException e) { }
     }
 
     public void unparse(PrintWriter p, int indent) {
@@ -393,14 +399,19 @@ class StructDeclNode extends DeclNode {
 
     public void nameAnalysis(SymTable symTab){
 	myId.nameAnalysis(symTab);
+	symTab.addScope();
 	myDeclList.nameAnalysis(symTab);
+	try {
+	   symTab.removeScope();
+	//TODO: Add message?
+	} catch (EmptySymTableException e) { }
     }
 
     public void unparse(PrintWriter p, int indent) {
         doIndent(p, indent);
         p.print("struct ");
-		myId.unparse(p, 0);
-		p.println("{");
+	myId.unparse(p, 0);
+	p.println("{");
         myDeclList.unparse(p, indent+4);
         doIndent(p, indent);
         p.println("};\n");
@@ -585,9 +596,15 @@ class IfStmtNode extends StmtNode {
     }
 
     public void nameAnalysis(SymTable symTab){
-        myDeclList.nameAnalysis(symTab);
+	
         myExp.nameAnalysis(symTab);
-        myStmtList.nameAnalysis(symTab);
+	symTab.addScope();
+        myDeclList.nameAnalysis(symTab);
+	myStmtList.nameAnalysis(symTab);
+	try {
+	   symTab.removeScope();
+	//TODO: Add message?
+	} catch (EmptySymTableException e) { }
     }
 
     public void unparse(PrintWriter p, int indent) {
@@ -620,10 +637,21 @@ class IfElseStmtNode extends StmtNode {
 
     public void nameAnalysis(SymTable symTab){
         myExp.nameAnalysis(symTab);
-        myThenDeclList.nameAnalysis(symTab);
+        symTab.addScope();
+	myThenDeclList.nameAnalysis(symTab);
         myThenStmtList.nameAnalysis(symTab);
-        myElseDeclList.nameAnalysis(symTab);
+	try {
+	   symTab.removeScope();
+	//TODO: Add message?
+	} catch (EmptySymTableException e) { }
+       
+	symTab.addScope(); 
+	myElseDeclList.nameAnalysis(symTab);
         myElseStmtList.nameAnalysis(symTab);
+	try {
+	   symTab.removeScope();
+	//TODO: Add message?
+	} catch (EmptySymTableException e) { }
     }
 
     public void unparse(PrintWriter p, int indent) {
@@ -660,8 +688,13 @@ class WhileStmtNode extends StmtNode {
 	
     public void nameAnalysis(SymTable symTab){
         myExp.nameAnalysis(symTab);
+	symTab.addScope();
         myDeclList.nameAnalysis(symTab);
         myStmtList.nameAnalysis(symTab);
+	try {
+	   symTab.removeScope();
+	//TODO: Add message?
+	} catch (EmptySymTableException e) { }
     }
 
     public void unparse(PrintWriter p, int indent) {
@@ -706,7 +739,9 @@ class ReturnStmtNode extends StmtNode {
     }
 
     public void nameAnalysis(SymTable symTab){
-        myExp.nameAnalysis(symTab);
+        if (myExp != null) {
+	    myExp.nameAnalysis(symTab);
+	}
     }
 
     public void unparse(PrintWriter p, int indent) {
@@ -810,6 +845,14 @@ class IdNode extends ExpNode {
     }
 
     public void nameAnalysis(SymTable symTab){
+	SemSym symbol = symTab.lookupGlobal(myStrVal);
+	if (symbol == null) {
+	    ErrMsg.fatal(myLineNum, myCharNum, "Undeclared identifier");	
+	    System.exit(-1);
+	}
+	else {
+	    String type = symbol.getType();
+	}
     }
 
     public void unparse(PrintWriter p, int indent) {
