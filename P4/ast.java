@@ -845,14 +845,78 @@ class IdNode extends ExpNode {
     }
 
     public void nameAnalysis(SymTable symTab){
-	SemSym symbol = symTab.lookupGlobal(myStrVal);
-	if (symbol == null) {
-	    ErrMsg.fatal(myLineNum, myCharNum, "Undeclared identifier");	
-	    System.exit(-1);
-	}
-	else {
-	    String type = symbol.getType();
-	}
+	
+		while(true)
+		{
+			int val = -1;
+			val++;
+			switch(val)
+			{
+				case 0: 
+					symbol = symTab.lookupGlobal(myStrVal);
+					if (symbol == null) {
+						ErrMsg.fatal(myLineNum, myCharNum, "Undeclared identifier");	
+						System.exit(-1);
+						break;
+					}
+					else 
+					{
+						type = symbol.getType();
+						break;
+					}
+					
+				case 1:
+					type = symbol.getType();
+					if (type == "void")
+					{
+						ErrMsg.fatal(myLineNum, myCharNum, "Non-function declared void");
+					}
+
+					symbol = new SemSym(type);
+					
+					if (symTab.lookupLocal(myStrVal) == null)
+					{
+						try
+						{
+							symTab.addDecl(myStrVal, symbol);
+						}
+						catch ( DuplicateSymException e1)
+						{
+							System.err.println("addDecl failed:"+e1);
+						} 
+						catch ( EmptySymTableException e2)
+						{
+							System.err.println("addDecl failed:"+e2);
+						} 
+						catch ( NullPointerException e3)
+						{
+							System.err.println("addDecl failed:"+e3);
+						}
+						break;
+					}
+					
+					else
+					{
+						ErrMsg.fatal(myLineNum, myCharNum, "Multiply declared identifier");
+						break;
+					}
+				
+				//case 2:
+					//At this point, the code compiles. 
+					//I don't know how to bring in different types for symbol. 
+					//symbol = new SemSym(type) might be the code to start out with,
+					//but to bring in List<String> and HashMap<String, Sym>, 
+					//I think we need some methods in the Sym class
+					//If you can think of a different way, let me know
+					//type = symbol.getType() will technically cover all types of data, so
+					//we might just need to consider what happens if type == "something"
+					//Try to work with that for a bit. 
+					//Ex. if (type == "struct") or something like that. 
+					
+					
+			}
+			
+		}
     }
 
     public void unparse(PrintWriter p, int indent) {
@@ -862,6 +926,8 @@ class IdNode extends ExpNode {
     private int myLineNum;
     private int myCharNum;
     private String myStrVal;
+	private SemSym symbol;
+	private String type;
 }
 
 class DotAccessExpNode extends ExpNode {
