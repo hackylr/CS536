@@ -852,6 +852,7 @@ class IdNode extends ExpNode {
 			val++;
 			switch(val)
 			{
+				//Basically, this just determines if the ID exists or not. 
 				case 0: 
 					symbol = symTab.lookupGlobal(myStrVal);
 					if (symbol == null) {
@@ -865,14 +866,22 @@ class IdNode extends ExpNode {
 						break;
 					}
 					
+				//Determines if the type is void or not
 				case 1:
 					type = symbol.getType();
 					if (type == "void")
 					{
 						ErrMsg.fatal(myLineNum, myCharNum, "Non-function declared void");
 					}
-
-					symbol = new SemSym(type);
+					
+					try
+					{	
+						symbol = new SemSym(type, false, false, null, null);
+					}
+					catch (Exception e)
+					{
+						e.printStackTrace();
+					}
 					
 					if (symTab.lookupLocal(myStrVal) == null)
 					{
@@ -880,17 +889,17 @@ class IdNode extends ExpNode {
 						{
 							symTab.addDecl(myStrVal, symbol);
 						}
-						catch ( DuplicateSymException e1)
+						catch ( DuplicateSymException e)
 						{
-							System.err.println("addDecl failed:"+e1);
+							System.err.println("addDecl failed:" + e);
 						} 
-						catch ( EmptySymTableException e2)
+						catch ( EmptySymTableException e)
 						{
-							System.err.println("addDecl failed:"+e2);
+							System.err.println("addDecl failed:" + e);
 						} 
-						catch ( NullPointerException e3)
+						catch ( NullPointerException e)
 						{
-							System.err.println("addDecl failed:"+e3);
+							System.err.println("addDecl failed:" + e);
 						}
 						break;
 					}
@@ -901,11 +910,21 @@ class IdNode extends ExpNode {
 						break;
 					}
 				
-				//case 2:
+				/*
+				case 2:
+					
+						if (type == "")
+						{
+							ErrMsg.fatal(myLineNum, myCharNum, "Non-function declared void");
+						}
+				*/
+				
+				
+				
 					//At this point, the code compiles. 
 					//I don't know how to bring in different types for symbol. 
 					//symbol = new SemSym(type) might be the code to start out with,
-					//but to bring in List<String> and HashMap<String, Sym>, 
+					//but to bring in List<String> and HashMap<String, Sym> for ex, 
 					//I think we need some methods in the Sym class
 					//If you can think of a different way, let me know
 					//type = symbol.getType() will technically cover all types of data, so
