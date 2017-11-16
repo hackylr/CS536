@@ -2,23 +2,23 @@ import java.util.*;
 
 public class SemSym {
     private String type;
-	private boolean function;
+    private boolean function;
     private boolean struct;
-	private List <String> formalsListVals;
-	private HashMap <String, SemSym> structMems;
+    private List <String> formalsListVals;
+    private HashMap <String, SemSym> structMems;
 	
     public SemSym(String type, boolean function, boolean struct, List <String> 
-		formalsListVals, HashMap <String, SemSym> structMems) {
+		formalsListVals, HashMap <String, SemSym> structMems) throws Exception{
 		if (type == null) {
-			throw Exception("Type is null");
+			throw new Exception("Type is null");
 		}
-		if (formalsListVals == null || formalsListVals.isEmpty()) {
-			throw Exception("FormalsListVals is null or empty");
+		/*if (formalsListVals.isEmpty()) {
+			throw new Exception("FormalsListVals is empty");
 		}
-		if (structMems == null || structMems.isEmpty()) {
-			throw Exception("structMems is null or empty");
-		}
-        this.type = type;
+		if (structMems.isEmpty()) {
+			throw new Exception("structMems is empty");
+		}*/
+        	this.type = type;
 		this.function = function;
 		this.struct = struct;
 		this.formalsListVals = formalsListVals;
