@@ -12,12 +12,12 @@ public class SemSym {
 		if (type == null) {
 			throw new Exception("Type is null");
 		}
-		/*if (formalsListVals.isEmpty()) {
+		if (formalsListVals.isEmpty()) {
 			throw new Exception("FormalsListVals is empty");
 		}
 		if (structMems.isEmpty()) {
 			throw new Exception("structMems is empty");
-		}*/
+		}
         	this.type = type;
 		this.function = function;
 		this.struct = struct;
