@@ -305,9 +305,15 @@ class VarDeclNode extends DeclNode {
     }
 
     public void nameAnalysis(SymTable symTab){
+	//myStrVal
 	myType.nameAnalysis(symTab);
-	myId.nameAnalysis(symTab);
-	//mySize.nameAnalysis(symTab);
+	SemSym symbol = symTab.lookupGlobal(myId.getMyStrVal());
+	if (symbol.isStruct()) {
+	   myId.nameAnalysis(symTab, 2);
+	}
+	else {
+	   myId.nameAnalysis(symTab, 1);   
+	} 
     }
 
     public void unparse(PrintWriter p, int indent) {
@@ -338,8 +344,8 @@ class FnDeclNode extends DeclNode {
     }
 
     public void nameAnalysis(SymTable symTab){
-	myType.nameAnalysis(symTab);
-	myId.nameAnalysis(symTab);
+	myId.nameAnalysis(symTab, 3);
+	
 	symTab.addScope();
 	myFormalsList.nameAnalysis(symTab);
 	myBody.nameAnalysis(symTab);
@@ -377,7 +383,7 @@ class FormalDeclNode extends DeclNode {
 
     public void nameAnalysis(SymTable symTab){
 	myType.nameAnalysis(symTab);
-	myId.nameAnalysis(symTab);
+	myId.nameAnalysis(symTab, 1);
     }
 
     public void unparse(PrintWriter p, int indent) {
@@ -844,109 +850,185 @@ class IdNode extends ExpNode {
         myStrVal = strVal;
     }
 
-    public void nameAnalysis(SymTable symTab){
-	
-		while(true)
+    // Ignored
+    public void nameAnalysis(SymTable symTab) {
+    }    
+
+    public void nameAnalysis(SymTable symTab, int val) {
+	// Check for undeclared identifier
+	symbol = symTab.lookupGlobal(myStrVal);
+	if (symbol == null) {
+	   ErrMsg.fatal(myLineNum, myCharNum, "Undeclared identifier");	
+	}
+	else 
+	{
+	   type = symbol.getType();
+	}
+
+	switch (val) {
+	   case 1:
+	      // Check for non-function void
+ 	      if (type == "void" && !symbol.isFunction()) {
+	         ErrMsg.fatal(myLineNum, myCharNum, "Non-function declared void");
+	      }
+	      else {
+		if (symTab.lookupLocal(myStrVal) == null)
 		{
-			int val = -1;
-			val++;
-			switch(val)
-			{
-				//Basically, this just determines if the ID exists or not. 
-				case 0: 
-					symbol = symTab.lookupGlobal(myStrVal);
-					if (symbol == null) {
-						ErrMsg.fatal(myLineNum, myCharNum, "Undeclared identifier");	
-						System.exit(-1);
-						break;
-					}
-					else 
-					{
-						type = symbol.getType();
-						break;
-					}
-					
-				//Determines if the type is void or not
-				case 1:
-					type = symbol.getType();
-					if (type == "void")
-					{
-						ErrMsg.fatal(myLineNum, myCharNum, "Non-function declared void");
-					}
-					
-					try
-					{	
-						symbol = new SemSym(type, false, false, null, null);
-					}
-					catch (Exception e)
-					{
-						e.printStackTrace();
-					}
-					
-					if (symTab.lookupLocal(myStrVal) == null)
-					{
-						try
-						{
-							symTab.addDecl(myStrVal, symbol);
-						}
-						catch ( DuplicateSymException e)
-						{
-							System.err.println("addDecl failed:" + e);
-						} 
-						catch ( EmptySymTableException e)
-						{
-							System.err.println("addDecl failed:" + e);
-						} 
-						catch ( NullPointerException e)
-						{
-							System.err.println("addDecl failed:" + e);
-						}
-						break;
-					}
-					
-					else
-					{
-						ErrMsg.fatal(myLineNum, myCharNum, "Multiply declared identifier");
-						break;
-					}
-				
-				/*
-				case 2:
-					
-						if (type == "")
-						{
-							ErrMsg.fatal(myLineNum, myCharNum, "Non-function declared void");
-						}
-				*/
-				
-				
-				
-					//At this point, the code compiles. 
-					//I don't know how to bring in different types for symbol. 
-					//symbol = new SemSym(type) might be the code to start out with,
-					//but to bring in List<String> and HashMap<String, Sym> for ex, 
-					//I think we need some methods in the Sym class
-					//If you can think of a different way, let me know
-					//type = symbol.getType() will technically cover all types of data, so
-					//we might just need to consider what happens if type == "something"
-					//Try to work with that for a bit. 
-					//Ex. if (type == "struct") or something like that. 
-					
-					
-			}
-			
+		   try
+		   {
+			symTab.addDecl(myStrVal, symbol);
+		   }
+		 catch ( DuplicateSymException e)
+		 {
+			System.err.println("addDecl failed:" + e);
+			System.exit(-1);
+		 } 
+		 catch ( EmptySymTableException e)
+		 {
+			System.err.println("addDecl failed:" + e);
+			System.exit(-1);
+		 } 
+		 catch ( NullPointerException e)
+		 {
+			System.err.println("addDecl failed:" + e);
+			System.exit(-1);
+		 }
+		 }
+		 else
+	         {
+		 ErrMsg.fatal(myLineNum, myCharNum, "Multiply declared identifier");
+		 }
+	       }
+	      break;
+          case 2:
+		// myType.myStrVal
+	      String structName = "struct " + myStrVal; 
+	      SemSym structSymbol = symTab.lookupGlobal(structName);
+	      
+	      type = structSymbol.getType();
+
+	      if (structSymbol == null) {
+	         ErrMsg.fatal(myLineNum, myCharNum, "Invalid name of struct type");
+	      }
+	      //TODO: Add in struct members somehow?
+	      SemSym instanceOfStruct = null;
+	      
+	      try {
+	        instanceOfStruct = new SemSym(type, false, true, null);
+	      } catch (Exception e) {
+		 e.printStackTrace();
+		 System.exit(-1);
+	      }
+
+	      try {
+		symTab.addDecl(myStrVal, instanceOfStruct);
+	      } catch (DuplicateSymException e) {
+
+		 ErrMsg.fatal(myLineNum, myCharNum, "Multiply declared identifier");
+	      } catch (EmptySymTableException e) {
+
+		 e.printStackTrace();
+		 System.exit(-1);
+	      }
+	      break;
+
+           case 3:
+		// Function check for multiply declared name
+		String fnName = myStrVal;	
+		SemSym fnPrev = symTab.lookupGlobal(fnName);	
+		type = fnPrev.getType();
+		SemSym fn = null;
+		try {
+	          fn = new SemSym(type, true, false, null);
+	        } catch (Exception e) {
+		   e.printStackTrace();
+		   System.exit(-1);
+	        }
+
+		if (fnPrev != null) {
+		    //TODO Comparison of fnPrev and fn?
+		    ErrMsg.fatal(myLineNum, myCharNum, "Multiply declared identifier");
 		}
-    }
+
+		else {
+	   	  try {
+	             symTab.addDecl(fnName, fn);
+	   	  } catch (DuplicateSymException e) {
+	             e.printStackTrace();
+	             System.exit(-1);
+	          } catch (EmptySymTableException e) {
+	      	     e.printStackTrace();
+	             System.exit(-1);
+	   	  }
+	       }
+	       break;
+	}
+	
+	try {
+	   symbol = new SemSym(type, false, false, null);
+           type = symbol.getType();	
+
+	}
+	catch (Exception e)
+	{
+		e.printStackTrace();
+		System.exit(-1);
+	}
+				
+	if (symTab.lookupLocal(myStrVal) == null)
+	{
+		try
+		{
+			symTab.addDecl(myStrVal, symbol);
+		}
+		catch ( DuplicateSymException e)
+		{
+			System.err.println("addDecl failed:" + e);
+			System.exit(-1);
+		} 
+		catch ( EmptySymTableException e)
+		{
+			System.err.println("addDecl failed:" + e);
+			System.exit(-1);
+		} 
+		catch ( NullPointerException e)
+		{
+			System.err.println("addDecl failed:" + e);
+			System.exit(-1);
+		}
+	}
+	
+	else
+	{
+		ErrMsg.fatal(myLineNum, myCharNum, "Multiply declared identifier");
+	}
+	// only else can reach here
+	//At this point, the code compiles. 
+	//I don't know how to bring in different types for symbol. 
+	//symbol = new SemSym(type) might be the code to start out with,
+	//but to bring in List<String> and HashMap<String, Sym> for ex, 
+	//I think we need some methods in the Sym class
+	//If you can think of a different way, let me know
+	//type = symbol.getType() will technically cover all types of data, so
+	//we might just need to consider what happens if type == "something"
+	//Try to work with that for a bit. 
+	//Ex. if (type == "struct") or something like that. 
+	
+	}
 
     public void unparse(PrintWriter p, int indent) {
         p.print(myStrVal);
     }
 
+    public String getMyStrVal() {
+        return myStrVal;
+    }
+
     private int myLineNum;
     private int myCharNum;
     private String myStrVal;
-	private SemSym symbol;
-	private String type;
+    private SemSym symbol;
+    private String type;
 }
 
 class DotAccessExpNode extends ExpNode {
@@ -1266,7 +1348,7 @@ class LessEqNode extends BinaryExpNode {
     public void unparse(PrintWriter p, int indent) {
 	    p.print("(");
 		myExp1.unparse(p, 0);
-		p.print(" <= ");
+		p.print(" <= ");  
 		myExp2.unparse(p, 0);
 		p.print(")");
     }
