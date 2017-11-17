@@ -115,10 +115,7 @@ abstract class ASTnode {
     protected void doIndent(PrintWriter p, int indent) {
         for (int k=0; k<indent; k++) p.print(" ");
     }
-
-    public HashMap<String, SemSym> retStructMems(SymTable symTab) {
-        
-    }
+	
 }
 
 // **********************************************************************
@@ -177,6 +174,52 @@ class DeclListNode extends ASTnode {
             System.exit(-1);
         }
     }
+
+		
+    public HashMap<String, SemSym> retStructMems(SymTable symTab) {
+        HashMap<String, SemSym> mems = new HashMap<String, SemSym>();
+	Iterator iterator = myDecls.iterator();
+	SemSym symbol = null;
+
+	symTab.addScope();
+	while(iterator.hasNext())
+	{
+		VarDeclNode tmp = (VarDeclNode)iterator.next();
+		tmp.nameAnalysis(symTab);
+		String name = tmp.getID().getMyStrVal();
+		
+		if(tmp.getID().getSemSym().isStruct())
+		{
+			try
+			{
+				symbol = new SemSym(tmp.getID().getMyStrVal(), 
+						false, true, tmp.getID().getSemSym().getStructMems());
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+				System.exit(-1);	
+			}
+		}
+		else
+		{
+			try
+			{
+				symbol = new SemSym(tmp.getID().getMyStrVal(), false, false, null);
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+				System.exit(-1);	
+			}
+	
+		}
+			
+		mems.put(tmp.getID().getMyStrVal(), symbol);
+	}
+	return mems; 
+    }
+
 
     // list of kids (DeclNodes)
     private List<DeclNode> myDecls;
@@ -326,6 +369,16 @@ class VarDeclNode extends DeclNode {
         p.print(" ");
         myId.unparse(p, 0);
         p.println(";");
+    }
+
+    public IdNode getID()
+    {
+	return myId;
+    }
+
+    public TypeNode getType()
+    {
+	return myType;
     }
 
     // 3 kids
@@ -489,6 +542,8 @@ class StructNode extends TypeNode {
         p.print("struct ");
 		myId.unparse(p, 0);
     }
+
+    
 	
 	// 1 kid
     private IdNode myId;
@@ -614,7 +669,10 @@ class IfStmtNode extends StmtNode {
 	try {
 	   symTab.removeScope();
 	//TODO: Add message?
-	} catch (EmptySymTableException e) { }
+	} catch (EmptySymTableException e) { 
+		e.printStackTrace();
+		System.exit(-1);
+	}
     }
 
     public void unparse(PrintWriter p, int indent) {
@@ -653,7 +711,10 @@ class IfElseStmtNode extends StmtNode {
 	try {
 	   symTab.removeScope();
 	//TODO: Add message?
-	} catch (EmptySymTableException e) { }
+	} catch (EmptySymTableException e) {	
+		e.printStackTrace();
+		System.exit(-1);
+	}
        
 	symTab.addScope(); 
 	myElseDeclList.nameAnalysis(symTab);
@@ -661,7 +722,10 @@ class IfElseStmtNode extends StmtNode {
 	try {
 	   symTab.removeScope();
 	//TODO: Add message?
-	} catch (EmptySymTableException e) { }
+	} catch (EmptySymTableException e) { 	
+		e.printStackTrace();
+		System.exit(-1);
+	}
     }
 
     public void unparse(PrintWriter p, int indent) {
@@ -704,7 +768,11 @@ class WhileStmtNode extends StmtNode {
 	try {
 	   symTab.removeScope();
 	//TODO: Add message?
-	} catch (EmptySymTableException e) { }
+	} catch (EmptySymTableException e) { 
+		e.printStackTrace();
+		System.exit(-1);
+
+	}
     }
 
     public void unparse(PrintWriter p, int indent) {
@@ -1021,11 +1089,17 @@ class IdNode extends ExpNode {
 	}
 
     public void unparse(PrintWriter p, int indent) {
-        p.print(myStrVal);
+	p.print(myStrVal);
+	p.print("("+type+")");
     }
 
     public String getMyStrVal() {
         return myStrVal;
+    }
+
+    public SemSym getSemSym()
+    {
+	return symbol;
     }
 
     private int myLineNum;
