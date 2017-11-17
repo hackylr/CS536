@@ -115,6 +115,10 @@ abstract class ASTnode {
     protected void doIndent(PrintWriter p, int indent) {
         for (int k=0; k<indent; k++) p.print(" ");
     }
+
+    public HashMap<String, SemSym> retStructMems(SymTable symTab) {
+        
+    }
 }
 
 // **********************************************************************
