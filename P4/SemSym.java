@@ -6,6 +6,7 @@ public class SemSym {
     private boolean struct;
     private List <String> formalsListVals;
     private HashMap <String, SemSym> structMems;	
+    
     public SemSym(String type, boolean function, boolean struct, 
 	HashMap <String, SemSym> structMems) throws Exception{
 	

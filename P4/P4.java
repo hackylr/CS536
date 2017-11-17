@@ -60,7 +60,14 @@ public class P4 {
 	SymTable symTab = new SymTable();
 	((ASTnode)root.value).nameAnalysis(symTab);	
 	// TODO: Handle errors
-	
+        if (ErrMsg.error) {
+	    System.err.println("At least one error occurred during name analysis");
+	    // Don't unparse if there are errors
+	    System.exit(-1);
+	}
+	else {
+	   System.out.println("No errors after performing name analysis");
+	}	
         ((ASTnode)root.value).unparse(outFile, 0);
         outFile.close();
 
