@@ -1,0 +1,77 @@
+// Empty function body
+void hello() {}
+  
+// StructDeclNode
+struct Point {
+    int x;
+    int y;
+};
+
+int f(int x, bool b) { }
+
+void g() {
+    int a;
+    bool b;
+    struct Point p;
+    p.x = a;
+    b = a == 3;
+    f(a + p.y*2, b);
+    g();
+}
+
+// TypeNode subclasses
+int x;
+int y;
+bool b;
+void hello;
+
+#StmtNode subclasses
+void d() {
+   int tmp1;
+   int tmp2;
+   tmp1 = 3;
+   tmp2 = 2;
+   tmp1++;
+   tmp1--;
+   cin >> tmp2;
+   cout << tmp2;
+   if (x == 3) { z = 3; }
+   if (b == -1) { x = 4+3*5-y; while (c) { y = y*2+x; } } else { x = 0; }
+   while (c) { }
+   c();
+   return;
+}
+
+// ExpNode subclasses that aren't unary or binary
+bool a() {
+  b = true; c = false;
+
+  //DotAccess
+  test.x = temp;
+
+  return true;
+}
+
+# Unary or BinaryExpNode subclasses not tested in main
+void c(int result) {
+   int tmp1;
+   int tmp2;
+   tmp1 = 3;
+   tmp2 = 2;
+   result = -result;
+   result = !tmp1;
+   result = tmp1 + tmp2;
+   result = tmp1 - tmp2;
+   result = tmp1 * tmp2;
+   result = tmp1 / tmp2;
+   result = tmp1 && tmp2; 
+   result = tmp1 || tmp2;
+   result = tmp1 == tmp2;
+   result = tmp1 != tmp2;
+   result = tmp1 < tmp2;
+   result = tmp1 > tmp2;
+   result = tmp1 <= tmp2;
+   result = tmp1 >= tmp2;
+}
+
+# Might be null in ast.java?

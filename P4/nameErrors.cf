@@ -1,0 +1,54 @@
+int x;
+int x;
+bool b;
+bool b;
+void hello;
+void hello;
+
+struct Point {
+    int x;
+    int y;
+};
+
+struct Point {
+    int x;
+    int y;
+};
+
+struct Point math;
+
+struct pair math;
+
+int a()
+{
+	int num;
+}
+
+int a()
+{
+	bool result;
+}
+
+int b()
+{
+	nonExistentFunc();
+}
+
+
+//Testing bad structs
+c.mem = "math";
+math.equation.value = 0;
+math.equation = "y=mx+b";
+math.equation.value.number.x = 0;
+
+void d(void param)
+{
+	void var;
+}
+
+void e()
+{
+	x + y;
+}
+
+
