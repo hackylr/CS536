@@ -356,10 +356,11 @@ class VarDeclNode extends DeclNode {
 	myType.nameAnalysis(symTab);
 	SemSym symbol = symTab.lookupGlobal(myId.getMyStrVal());
 	if (symbol.isStruct()) {
-	   myId.nameAnalysis(symTab, 2);
+	   myId.nameAnalysis(symTab, 2, null, null);
 	}
+	// if type = bool, int, or void
 	else {
-	   myId.nameAnalysis(symTab, 1);   
+	   myId.nameAnalysis(symTab, 1, null, null);   
 	} 
     }
 
@@ -401,7 +402,7 @@ class FnDeclNode extends DeclNode {
     }
 
     public void nameAnalysis(SymTable symTab){
-	myId.nameAnalysis(symTab, 3);
+	myId.nameAnalysis(symTab, 3, null, null);
 	
 	symTab.addScope();
 	myFormalsList.nameAnalysis(symTab);
@@ -440,7 +441,7 @@ class FormalDeclNode extends DeclNode {
 
     public void nameAnalysis(SymTable symTab){
 	myType.nameAnalysis(symTab);
-	myId.nameAnalysis(symTab, 1);
+	myId.nameAnalysis(symTab, 1, null, null);
     }
 
     public void unparse(PrintWriter p, int indent) {
@@ -461,13 +462,17 @@ class StructDeclNode extends DeclNode {
     }
 
     public void nameAnalysis(SymTable symTab){
-	myId.nameAnalysis(symTab);
+	HashMap <String, SemSym> structMems = myDeclList.retStructMems(symTab);
+	myId.nameAnalysis(symTab, 2, structMems, null);
 	symTab.addScope();
 	myDeclList.nameAnalysis(symTab);
 	try {
 	   symTab.removeScope();
 	//TODO: Add message?
-	} catch (EmptySymTableException e) { }
+	} catch (EmptySymTableException e) { 
+	   e.printStackTrace();
+	   System.exit(-1);
+	}
     }
 
     public void unparse(PrintWriter p, int indent) {
@@ -483,7 +488,7 @@ class StructDeclNode extends DeclNode {
 
     // 2 kids
     private IdNode myId;
-	private DeclListNode myDeclList;
+    private DeclListNode myDeclList;
 }
 
 // **********************************************************************
@@ -841,6 +846,9 @@ class ReturnStmtNode extends StmtNode {
 // **********************************************************************
 
 abstract class ExpNode extends ASTnode {
+    public ExpNode getMyLoc() {
+       return null;
+    }
 }
 
 class IntLitNode extends ExpNode {
@@ -926,7 +934,8 @@ class IdNode extends ExpNode {
     public void nameAnalysis(SymTable symTab) {
     }    
 
-    public void nameAnalysis(SymTable symTab, int val) {
+    public void nameAnalysis(SymTable symTab, int val, HashMap <String, SemSym>
+	structMems, ExpNode myLoc) {
 	// Check for undeclared identifier
 	symbol = symTab.lookupGlobal(myStrVal);
 	if (symbol == null) {
@@ -938,42 +947,38 @@ class IdNode extends ExpNode {
 	}
 
 	switch (val) {
+	   // For regular SemSym (no functions or structs)
 	   case 1:
 	      // Check for non-function void
- 	      if (type == "void" && !symbol.isFunction()) {
+ 	      if (type == "void") {
 	         ErrMsg.fatal(myLineNum, myCharNum, "Non-function declared void");
 	      }
 	      else {
-		if (symTab.lookupLocal(myStrVal) == null)
-		{
-		   try
-		   {
-			symTab.addDecl(myStrVal, symbol);
-		   }
-		 catch ( DuplicateSymException e)
-		 {
-			System.err.println("addDecl failed:" + e);
-			System.exit(-1);
-		 } 
-		 catch ( EmptySymTableException e)
-		 {
-			System.err.println("addDecl failed:" + e);
-			System.exit(-1);
-		 } 
-		 catch ( NullPointerException e)
-		 {
-			System.err.println("addDecl failed:" + e);
-			System.exit(-1);
+	         try {
+	   	    symbol = new SemSym(type, false, false, null);
+           	    type = symbol.getType();	
+
 		 }
+		 catch (Exception e)
+		 {
+		    e.printStackTrace();
+		    System.exit(-1);
+	         }
+				
+		 if (symTab.lookupLocal(myStrVal) == null)
+		 {
+	    	    addDeclaration(myStrVal, symbol, symTab);
 		 }
+	
 		 else
-	         {
-		 ErrMsg.fatal(myLineNum, myCharNum, "Multiply declared identifier");
+		 {
+	     	    ErrMsg.fatal(myLineNum, myCharNum, "Multiply declared identifier");
 		 }
-	       }
+	
+	     }
 	      break;
+	  // For struct SemSyms
           case 2:
-		// myType.myStrVal
 	      String structName = "struct " + myStrVal; 
 	      SemSym structSymbol = symTab.lookupGlobal(structName);
 	      
@@ -986,30 +991,21 @@ class IdNode extends ExpNode {
 	      SemSym instanceOfStruct = null;
 	      
 	      try {
-	        instanceOfStruct = new SemSym(type, false, true, null);
+	        instanceOfStruct = new SemSym(type, false, true, structMems);
 	      } catch (Exception e) {
 		 e.printStackTrace();
 		 System.exit(-1);
 	      }
-
-	      try {
-		symTab.addDecl(myStrVal, instanceOfStruct);
-	      } catch (DuplicateSymException e) {
-
-		 ErrMsg.fatal(myLineNum, myCharNum, "Multiply declared identifier");
-	      } catch (EmptySymTableException e) {
-
-		 e.printStackTrace();
-		 System.exit(-1);
-	      }
+	      addDeclaration(myStrVal, instanceOfStruct, symTab);
 	      break;
-
+	   // For function SemSyms
            case 3:
 		// Function check for multiply declared name
 		String fnName = myStrVal;	
 		SemSym fnPrev = symTab.lookupGlobal(fnName);	
 		type = fnPrev.getType();
 		SemSym fn = null;
+		
 		try {
 	          fn = new SemSym(type, true, false, null);
 	        } catch (Exception e) {
@@ -1023,69 +1019,77 @@ class IdNode extends ExpNode {
 		}
 
 		else {
-	   	  try {
-	             symTab.addDecl(fnName, fn);
-	   	  } catch (DuplicateSymException e) {
-	             e.printStackTrace();
-	             System.exit(-1);
-	          } catch (EmptySymTableException e) {
-	      	     e.printStackTrace();
-	             System.exit(-1);
-	   	  }
+		  addDeclaration(fnName, fn, symTab);
 	       }
 	       break;
-	}
+	   // Verify that struct is on LHS
+	   case 4:
+		symbol = symTab.lookupGlobal(myStrVal);
+        	if (symbol == null) {
+           	   ErrMsg.fatal(myLineNum, myCharNum, "Undeclared identifier");
+                }
+	        else {
+		   type = symbol.getType();
+		   
+		   if (!symbol.isStruct()) {
+		      ErrMsg.fatal(myLineNum, myCharNum, "Dot-access of non-struct type");
+		   }		   
+                }
+	       break;
+	   // DotAccessNode - Check RHS when loc exists
+	   case 5:
+		IdNode struct = (IdNode) myLoc;
+		symbol = symTab.lookupGlobal(struct.getMyStrVal());      
+		  
+		if (symbol != null) {
+		   HashMap <String, SemSym> structVars = symbol.getStructMems();
 	
-	try {
-	   symbol = new SemSym(type, false, false, null);
-           type = symbol.getType();	
-
-	}
-	catch (Exception e)
-	{
-		e.printStackTrace();
-		System.exit(-1);
-	}
-				
-	if (symTab.lookupLocal(myStrVal) == null)
-	{
-		try
-		{
-			symTab.addDecl(myStrVal, symbol);
+		   if (structVars.containsKey(myStrVal)) {
+		      symbol = structVars.get(myStrVal);	  
+		      type = symbol.getType(); 
+		   }
+		   else {
+		      ErrMsg.fatal(myLineNum, myCharNum, "Invalid struct field name");
+		   }
+	        }
+		else {
+		      ErrMsg.fatal(myLineNum, myCharNum, "Undeclared identifier");
 		}
-		catch ( DuplicateSymException e)
-		{
-			System.err.println("addDecl failed:" + e);
-			System.exit(-1);
+		break;
+	   // DotAccessNode - Check RHS when loc doesn't exist
+	   case 6:
+		IdNode currStruct = (IdNode) myLoc;
+		symbol = symTab.lookupGlobal(currStruct.getMyStrVal());
+	        
+		if (symbol != null) {
+		   HashMap <String, SemSym> structVars = symbol.getStructMems();	
+		   if (structVars == null) {
+		      ErrMsg.fatal(myLineNum, myCharNum, "Dot-access of non-struct type");
+		   }
+		   else {
+		       if (structVars.containsKey(myStrVal)) {
+		      	  symbol = structVars.get(myStrVal);	  
+		          type = symbol.getType(); 
+		       }
+		       else {
+			  ErrMsg.fatal(myLineNum, myCharNum, "Invalid struct field name");
+		       }
+		   }	
 		} 
-		catch ( EmptySymTableException e)
-		{
-			System.err.println("addDecl failed:" + e);
-			System.exit(-1);
-		} 
-		catch ( NullPointerException e)
-		{
-			System.err.println("addDecl failed:" + e);
-			System.exit(-1);
+		else {
+		      ErrMsg.fatal(myLineNum, myCharNum, "Undeclared identifier");
 		}
+		break;
+	   // CallExpNode - 
+	   /*case 7:
+		symbol = symTab.lookupGlobal(myStrVal);
+	        if (symbol == null) {
+		   ErrMsg.fatal(myLineNum, myCharNum, "Undeclared identifier");
+		}
+		else {
+		   type = symbol.getType();
+		}*/
 	}
-	
-	else
-	{
-		ErrMsg.fatal(myLineNum, myCharNum, "Multiply declared identifier");
-	}
-	// only else can reach here
-	//At this point, the code compiles. 
-	//I don't know how to bring in different types for symbol. 
-	//symbol = new SemSym(type) might be the code to start out with,
-	//but to bring in List<String> and HashMap<String, Sym> for ex, 
-	//I think we need some methods in the Sym class
-	//If you can think of a different way, let me know
-	//type = symbol.getType() will technically cover all types of data, so
-	//we might just need to consider what happens if type == "something"
-	//Try to work with that for a bit. 
-	//Ex. if (type == "struct") or something like that. 
-	
 	}
 
     public void unparse(PrintWriter p, int indent) {
@@ -1102,6 +1106,29 @@ class IdNode extends ExpNode {
 	return symbol;
     }
 
+    public void addDeclaration(String name, SemSym symbol, SymTable symTab) {
+	try
+	{
+	   symTab.addDecl(name, symbol);
+	}
+	catch (DuplicateSymException e)
+	{
+	   System.err.println("addDecl failed:" + e);
+	   System.exit(-1);
+	} 
+	catch (EmptySymTableException e)
+	{
+	   System.err.println("addDecl failed:" + e);
+	   System.exit(-1);
+	} 
+	catch (NullPointerException e)
+	{
+	   System.err.println("addDecl failed:" + e);
+	   System.exit(-1);
+	}
+
+    }
+
     private int myLineNum;
     private int myCharNum;
     private String myStrVal;
@@ -1116,15 +1143,27 @@ class DotAccessExpNode extends ExpNode {
     }
 
     public void nameAnalysis(SymTable symTab){
-        myLoc.nameAnalysis(symTab);
-        myId.nameAnalysis(symTab);
+	myId.nameAnalysis(symTab, 4, null, null);
+	
+	// RHS is a loc
+	if (getMyLoc() != null) {
+	   myLoc.nameAnalysis(symTab);
+	   myId.nameAnalysis(symTab, 5, null, getMyLoc());
+	}
+	else {
+	   myId.nameAnalysis(symTab, 6, null, getMyLoc());
+	}
     }
 
     public void unparse(PrintWriter p, int indent) {
 	    p.print("(");
-		myLoc.unparse(p, 0);
-		p.print(").");
-		myId.unparse(p, 0);
+	    myLoc.unparse(p, 0);
+	    p.print(").");
+	    myId.unparse(p, 0);
+    }
+
+    public ExpNode getMyLoc() {
+	return myLoc;
     }
 
     // 2 kids
@@ -1169,17 +1208,19 @@ class CallExpNode extends ExpNode {
 
     public void nameAnalysis(SymTable symTab){
         myId.nameAnalysis(symTab);
-        myExpList.nameAnalysis(symTab);
+        if (myExpList != null) {
+	   myExpList.nameAnalysis(symTab);
+	}
     }
 
     // ** unparse **
     public void unparse(PrintWriter p, int indent) {
 	    myId.unparse(p, 0);
-		p.print("(");
-		if (myExpList != null) {
-			myExpList.unparse(p, 0);
-		}
-		p.print(")");
+	    p.print("(");
+	    if (myExpList != null) {
+		myExpList.unparse(p, 0);
+	    }
+	    p.print(")");
     }
 
     // 2 kids
