@@ -1,3 +1,30 @@
+///////////////////////////////////////////////////////////////////////////////
+//                   ALL STUDENTS COMPLETE THESE SECTIONS
+// Title:            P4.java
+// Files:            SemSym.java, SymTable.java, ast.java, ErrMsg.java, test.cf, 
+//						nameErrors.cf, cimple.cup, cimple.grammar, cimple.jlex,
+//						DuplicateSymException.java, EmptySymTableException.java
+//						Makefile, test.out, nameErrors.out
+
+// Semester:         CS536 Fall 2017
+//
+// Author:           Damon Francisco
+// Email:            dfrancisco@wisc.edu
+// CS Login:         damon
+// Lecturer's Name:  Aws Albarghouthi
+//
+//////////////////// PAIR PROGRAMMERS COMPLETE THIS SECTION ////////////////////
+//
+// Pair Partner:     Avery Chen
+// Email:            agchen@wisc.edu
+// CS Login:         avery
+// Lecturer's Name:  Aws Albarghouthi
+//
+//////////////////// STUDENTS WHO GET HELP FROM OTHER THAN THEIR PARTNER //////
+//
+// Online sources:   Piazza, Stack Overflow
+//////////////////////////// 80 columns wide //////////////////////////////////
+
 import java.io.*;
 import java.util.*;
 
@@ -342,6 +369,8 @@ class ExpListNode extends ASTnode {
 // **********************************************************************
 
 abstract class DeclNode extends ASTnode {
+	
+
 }
 
 class VarDeclNode extends DeclNode {
@@ -353,8 +382,11 @@ class VarDeclNode extends DeclNode {
 
     public void nameAnalysis(SymTable symTab){
 	//myStrVal
+	//myType = myId.getType();
+	String tmp = myId.getId();
+	//myType.setType(mytype.getID().getType());
+	//myType.setType(myType.getID().getType());	
 	myType.nameAnalysis(symTab);
-	myId.setType(myType.getID());
 	SemSym symbol = symTab.lookupGlobal(myId.getMyStrVal());
 	if (symbol != null) {
 	   if (symbol.isStruct()) {
@@ -384,6 +416,7 @@ class VarDeclNode extends DeclNode {
     }
 
     public TypeNode getType()
+
     {
 	return myType;
     }
@@ -408,7 +441,7 @@ class FnDeclNode extends DeclNode {
     }
 
     public void nameAnalysis(SymTable symTab){
-	//myId.setType(getType());
+	//myId.setType(myId.getType());
 	myId.nameAnalysis(symTab, 3, null, null);
 	
 	symTab.addScope();
@@ -447,8 +480,8 @@ class FormalDeclNode extends DeclNode {
     }
 
     public void nameAnalysis(SymTable symTab){
+	//myId.setType(myId.getType());
 	myType.nameAnalysis(symTab);
-	//myId.setType(getType());
 	myId.nameAnalysis(symTab, 1, null, null);
     }
 
@@ -471,7 +504,7 @@ class StructDeclNode extends DeclNode {
 
     public void nameAnalysis(SymTable symTab){
 	HashMap <String, SemSym> structMems = myDeclList.retStructMems(symTab);
-	//myId.setType(getType());
+	//myId.setType(myId.getType());
 	myId.nameAnalysis(symTab, 2, structMems, null);
 	symTab.addScope();
 	myDeclList.nameAnalysis(symTab);
@@ -504,7 +537,7 @@ class StructDeclNode extends DeclNode {
 // TypeNode and its Subclasses
 // **********************************************************************
 
-abstract class TypeNode extends ASTnode {
+abstract class TypeNode extends ASTnode {	
 }
 
 class IntNode extends TypeNode {
@@ -557,9 +590,6 @@ class StructNode extends TypeNode {
 		myId.unparse(p, 0);
     }
 
-   public IdNode getId() {
-       return myId;
-   } 
 	
 	// 1 kid
     private IdNode myId;
@@ -1127,6 +1157,11 @@ class IdNode extends ExpNode {
 
     public String getMyStrVal() {
         return myStrVal;
+    }
+
+    public String getType()
+    {
+	return type;
     }
 
     public SemSym getSemSym()
