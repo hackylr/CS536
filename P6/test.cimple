@@ -1,0 +1,101 @@
+int test(){
+    int a;
+    bool b;
+    a = 1;
+    b = true;
+    return a;
+}
+
+// Empty function body
+void hello() {}
+  
+// StructDeclNode
+struct Point {
+    int x;
+    int y;
+};
+struct Point p;
+
+int f(int x, bool b) { }
+
+void g() {
+    int a;
+    bool b;
+    p.x = a;
+    b = a == 3;
+    f(a + p.y*2, b);
+    g();
+}
+
+// TypeNode subclasses
+int x;
+int y;
+int z;
+bool b;
+bool c;
+
+#StmtNode subclasses
+void d() {
+   int tmp1;
+   int tmp2;
+   tmp1 = 3;
+   tmp2 = 2;
+   c = true;
+   tmp1++;
+   tmp1--;
+   cin >> tmp2;
+   cin >> c;
+   cout << tmp2;
+   cout << c;
+
+   if (x == 3) { z = 3; }
+   if (b == false) 
+   { 
+	x = 4+3*5-y; 
+	while (c) 
+	{ 
+		y = y*2+x; 
+		c = false;
+	} 
+    } 
+    else { x = 0; }
+   while (c) { }
+   d();
+   return;
+}
+
+// ExpNode subclasses that aren't unary or binary
+bool a() {
+  b = true; c = false;
+  //DotAccess
+  p.x = 1;
+
+  return true;
+}
+
+# Unary or BinaryExpNode subclasses not tested in main
+void math(int result, bool value) {
+   int tmp1;
+   int tmp2;
+   tmp1 = 3;
+   tmp2 = 2;
+   result = tmp1;
+   result = tmp1 + tmp2;
+   result = tmp1 - tmp2;
+   result = tmp1 * tmp2;
+   result = tmp1 / tmp2;
+   value =  b && c; 
+   value = b || c;
+   value = tmp1 == tmp2;
+   value = tmp1 != tmp2;
+   value = tmp1 < tmp2;
+   value = tmp1 > tmp2;
+   value = tmp1 <= tmp2;
+   value = tmp1 >= tmp2;
+}
+
+#Miscellaneous
+int function()
+{
+	return 1;
+}

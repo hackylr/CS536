@@ -1,0 +1,126 @@
+bool bbb;
+struct S{
+    int a;
+};
+
+struct S t;
+struct P{
+    bool c;
+};
+
+struct P aa;
+void f(int p1, bool p2) {
+}
+
+bool hi() {
+    return;
+}
+
+void d() {
+    return "asd";
+}
+
+int c() {
+    return true;
+}
+
+void l() {
+}
+
+void k() {
+}
+
+void main() {
+    int aaa;
+    int ddd;
+    bool ccc;
+    l(->void) = k(->void);
+    P(struct) = S(struct);
+    t(S) = aa(P);
+    ccc(bool)++;
+    ccc(bool)--;
+    cin >> f(int,bool->void);
+    cin >> S(struct);
+    cin >> t(S);
+    cout << f(int,bool->void);
+    cout << S(struct);
+    cout << t(S);
+    cout << f(int,bool->void)(1, true);
+    if (aaa(int)) {
+    }
+    if ("eee") {
+    }
+    else {
+    }
+    while ("eeee") {
+    }
+    aaa(int) = (-f(int,bool->void));
+    aaa(int) = (-bbb(bool));
+    aaa(int) = (-"eee");
+    aaa(int) = (!f(int,bool->void));
+    aaa(int) = (!bbb(bool));
+    aaa(int) = (!"eee");
+    aaa(int) = (f(int,bool->void) + f(int,bool->void));
+    aaa(int) = (bbb(bool) + ccc(bool));
+    aaa(int) = ("eee" + "fff");
+    aaa(int) = (f(int,bool->void) - f(int,bool->void));
+    aaa(int) = (bbb(bool) - ccc(bool));
+    aaa(int) = ("eee" - "fff");
+    aaa(int) = (f(int,bool->void) * f(int,bool->void));
+    aaa(int) = (bbb(bool) * ccc(bool));
+    aaa(int) = ("eee" * "fff");
+    aaa(int) = (f(int,bool->void) / f(int,bool->void));
+    aaa(int) = (bbb(bool) / ccc(bool));
+    aaa(int) = ("eee" / "fff");
+    aaa(int) = (f(int,bool->void) && f(int,bool->void));
+    aaa(int) = (aaa(int) && ddd(int));
+    aaa(int) = ("eee" && "fff");
+    aaa(int) = (f(int,bool->void) || f(int,bool->void));
+    aaa(int) = (aaa(int) || ddd(int));
+    aaa(int) = ("eee" || "fff");
+    bbb(bool) = (f(int,bool->void) == 3);
+    ccc(bool) = (ccc(bool) == bbb(bool));
+    aaa(int) = (aaa(int) == ddd(int));
+    ccc(bool) = ("eee" == "fff");
+    ccc(bool) = (ccc(bool) != bbb(bool));
+    aaa(int) = (aaa(int) != ddd(int));
+    ccc(bool) = ("eee" != "fff");
+    ccc(bool) = (ccc(bool) < bbb(bool));
+    aaa(int) = (aaa(int) < ddd(int));
+    ccc(bool) = ("eee" < "fff");
+    ccc(bool) = (ccc(bool) > bbb(bool));
+    aaa(int) = (aaa(int) > ddd(int));
+    ccc(bool) = ("eee" > "fff");
+    ccc(bool) = (ccc(bool) <= bbb(bool));
+    aaa(int) = (aaa(int) <= ddd(int));
+    ccc(bool) = ("eee" <= "fff");
+    ccc(bool) = (ccc(bool) >= bbb(bool));
+    aaa(int) = (aaa(int) >= ddd(int));
+    ccc(bool) = ("eee" >= "fff");
+    bbb(bool) = (f(int,bool->void) > main(->void));
+    aaa(int)();
+    f(int,bool->void)();
+    f(int,bool->void)(5);
+    f(int,bool->void)(aaa(int), aaa(int));
+    f(int,bool->void)(t(S), t(S).a(int));
+    S(struct)();
+    t(S) = 5;
+    t(S) = t(S);
+    cin >> S(struct);
+    t(S) = (true || 3);
+    bbb(bool) = (S(struct) && t(S).a(int));
+    return 10;
+    aaa(int) = (aaa(int) + (!false));
+    aaa(int) = (aaa(int) + "foo");
+    bbb(bool) = aaa(int);
+    bbb(bool) = ((aaa(int) + true) && (bbb(bool) < true));
+    if ((l(->void)() == k(->void)())) {
+    }
+    if ((f(int,bool->void)() == hi(->bool)())) {
+    }
+    if ((S(struct) != P(struct))) {
+    }
+    if ((t(S) == aa(P))) {
+    }
+}
+

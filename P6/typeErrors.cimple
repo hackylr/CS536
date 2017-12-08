@@ -1,0 +1,156 @@
+bool bbb;
+struct S { int a; };
+struct S t;
+struct P {bool c; };
+struct P aa;
+
+void f(int p1, bool p2) {
+}
+
+// errors involving ReturnStmtNode
+bool hi() {
+  return;
+}
+
+void d() { 
+  return "asd";
+}
+
+int c() {
+  return true;
+}
+
+// Used 
+
+void l() {
+
+}
+
+void k() {
+
+}
+
+void main() {
+    int aaa;
+    int ddd;
+    bool ccc;
+
+    // Remaining errors involving StmtNode subclasses
+    l = k;
+    P = S;
+    t = aa;
+
+    ccc++;
+    ccc--;
+    cin >> f;
+    cin >> S;
+    cin >> t;
+    cout << f;
+    cout << S;
+    cout << t;
+    cout << f(1, true);
+    
+    if (aaa) {
+
+    }
+
+    if ("eee") {
+
+    }
+    else {
+
+    }
+
+    while ("eeee") {
+
+    }
+       
+    // errors involving UnaryExpNode and BinaryExpNode subclasses
+    aaa = -f;
+    aaa = -bbb;
+    aaa = -"eee";
+    aaa = !f;
+    aaa = !bbb;
+    aaa = !"eee";
+    aaa = f + f;
+    aaa = bbb + ccc;
+    aaa = "eee" + "fff";
+    aaa = f - f;
+    aaa = bbb - ccc;
+    aaa = "eee" - "fff";
+    aaa = f * f;
+    aaa = bbb * ccc;
+    aaa = "eee" * "fff";
+    aaa = f / f;
+    aaa = bbb / ccc;
+    aaa = "eee" / "fff";
+    aaa = f && f;
+    aaa = aaa && ddd;
+    aaa = "eee" && "fff";
+    aaa = f || f;
+    aaa = aaa || ddd;
+    aaa = "eee" || "fff";
+    bbb = f == 3;
+    ccc = (ccc == bbb);
+    aaa = (aaa == ddd);
+    ccc = ("eee" == "fff");
+    ccc = (ccc != bbb);
+    aaa = (aaa != ddd);
+    ccc = ("eee" != "fff");
+    ccc = (ccc < bbb);
+    aaa = (aaa < ddd);
+    ccc = ("eee" < "fff");
+    ccc = (ccc > bbb);
+    aaa = (aaa > ddd);
+    ccc = ("eee" > "fff");
+    ccc = (ccc <= bbb);
+    aaa = (aaa <= ddd);
+    ccc = ("eee" <= "fff");
+    ccc = (ccc >= bbb);
+    aaa = (aaa >= ddd);
+    ccc = ("eee" >= "fff");
+
+    bbb = f > main;
+
+    // some errors involving bad function calls 
+    aaa();
+    f();
+    f(5);
+    f(aaa, aaa);
+    f(t, t.a);
+    S();
+
+    // some errors involving structs 
+    t = 5;
+    t = t;
+    cin >> S;
+    t = true || 3;
+    bbb = S && t.a;
+
+    // error involving return
+    return 10;
+
+    // other type errors 
+    aaa = aaa + (!false);
+    aaa = aaa + "foo";
+    bbb = aaa;
+
+    // don't give too many or too few error messages here 
+    bbb = (aaa + true) && (bbb < true);
+
+    if (l() == k()) {
+
+    }
+
+    if (f() == hi()) {
+
+    }
+
+    if (S != P) {
+
+    }
+
+    if (t == aa) {
+
+    }
+}

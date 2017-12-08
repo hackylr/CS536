@@ -1,0 +1,110 @@
+0:0 ***ERROR*** Missing return value
+16:10 ***ERROR*** Return with a value in a void function
+20:10 ***ERROR*** Bad return value
+39:5 ***ERROR*** Function assignment
+40:5 ***ERROR*** Struct name assignment
+41:5 ***ERROR*** Struct variable assignment
+43:5 ***ERROR*** Arithmetic operator applied to non-numeric operand
+44:5 ***ERROR*** Arithmetic operator applied to non-numeric operand
+45:12 ***ERROR*** Attempt to read a function
+46:12 ***ERROR*** Attempt to read a struct name
+47:12 ***ERROR*** Attempt to read a struct variable
+48:13 ***ERROR*** Attempt to write a function
+49:13 ***ERROR*** Attempt to write a struct name
+50:13 ***ERROR*** Attempt to write a struct variable
+51:13 ***ERROR*** Attempt to write a function
+53:9 ***ERROR*** Non-bool expression used as an if condition
+57:9 ***ERROR*** Non-bool expression used as an if condition
+64:12 ***ERROR*** Non-bool expression used as an while condition
+69:12 ***ERROR*** Arithmetic operator applied to non-numeric operand
+70:12 ***ERROR*** Arithmetic operator applied to non-numeric operand
+71:12 ***ERROR*** Arithmetic operator applied to non-numeric operand
+72:12 ***ERROR*** Logical operator applied to non-bool operand
+73:5 ***ERROR*** Type mismatch
+74:12 ***ERROR*** Logical operator applied to non-bool operand
+75:11 ***ERROR*** Arithmetic operator applied to non-numeric operand
+75:15 ***ERROR*** Arithmetic operator applied to non-numeric operand
+76:11 ***ERROR*** Arithmetic operator applied to non-numeric operand
+76:17 ***ERROR*** Arithmetic operator applied to non-numeric operand
+77:11 ***ERROR*** Arithmetic operator applied to non-numeric operand
+77:19 ***ERROR*** Arithmetic operator applied to non-numeric operand
+78:11 ***ERROR*** Arithmetic operator applied to non-numeric operand
+78:15 ***ERROR*** Arithmetic operator applied to non-numeric operand
+79:11 ***ERROR*** Arithmetic operator applied to non-numeric operand
+79:17 ***ERROR*** Arithmetic operator applied to non-numeric operand
+80:11 ***ERROR*** Arithmetic operator applied to non-numeric operand
+80:19 ***ERROR*** Arithmetic operator applied to non-numeric operand
+81:11 ***ERROR*** Arithmetic operator applied to non-numeric operand
+81:15 ***ERROR*** Arithmetic operator applied to non-numeric operand
+82:11 ***ERROR*** Arithmetic operator applied to non-numeric operand
+82:17 ***ERROR*** Arithmetic operator applied to non-numeric operand
+83:11 ***ERROR*** Arithmetic operator applied to non-numeric operand
+83:19 ***ERROR*** Arithmetic operator applied to non-numeric operand
+84:11 ***ERROR*** Arithmetic operator applied to non-numeric operand
+84:15 ***ERROR*** Arithmetic operator applied to non-numeric operand
+85:11 ***ERROR*** Arithmetic operator applied to non-numeric operand
+85:17 ***ERROR*** Arithmetic operator applied to non-numeric operand
+86:11 ***ERROR*** Arithmetic operator applied to non-numeric operand
+86:19 ***ERROR*** Arithmetic operator applied to non-numeric operand
+87:11 ***ERROR*** Logical operator applied to non-bool operand
+87:16 ***ERROR*** Logical operator applied to non-bool operand
+88:11 ***ERROR*** Logical operator applied to non-bool operand
+88:18 ***ERROR*** Logical operator applied to non-bool operand
+89:11 ***ERROR*** Logical operator applied to non-bool operand
+89:20 ***ERROR*** Logical operator applied to non-bool operand
+90:11 ***ERROR*** Logical operator applied to non-bool operand
+90:16 ***ERROR*** Logical operator applied to non-bool operand
+91:11 ***ERROR*** Logical operator applied to non-bool operand
+91:18 ***ERROR*** Logical operator applied to non-bool operand
+92:11 ***ERROR*** Logical operator applied to non-bool operand
+92:20 ***ERROR*** Logical operator applied to non-bool operand
+93:11 ***ERROR*** Type mismatch
+95:5 ***ERROR*** Type mismatch
+98:5 ***ERROR*** Type mismatch
+100:12 ***ERROR*** Relational operator applied to non-numeric operand
+100:18 ***ERROR*** Relational operator applied to non-numeric operand
+101:5 ***ERROR*** Type mismatch
+102:12 ***ERROR*** Relational operator applied to non-numeric operand
+102:20 ***ERROR*** Relational operator applied to non-numeric operand
+103:12 ***ERROR*** Relational operator applied to non-numeric operand
+103:18 ***ERROR*** Relational operator applied to non-numeric operand
+104:5 ***ERROR*** Type mismatch
+105:12 ***ERROR*** Relational operator applied to non-numeric operand
+105:20 ***ERROR*** Relational operator applied to non-numeric operand
+106:12 ***ERROR*** Relational operator applied to non-numeric operand
+106:19 ***ERROR*** Relational operator applied to non-numeric operand
+107:5 ***ERROR*** Type mismatch
+108:12 ***ERROR*** Relational operator applied to non-numeric operand
+108:21 ***ERROR*** Relational operator applied to non-numeric operand
+109:12 ***ERROR*** Relational operator applied to non-numeric operand
+109:19 ***ERROR*** Relational operator applied to non-numeric operand
+110:5 ***ERROR*** Type mismatch
+111:12 ***ERROR*** Relational operator applied to non-numeric operand
+111:21 ***ERROR*** Relational operator applied to non-numeric operand
+113:11 ***ERROR*** Relational operator applied to non-numeric operand
+113:15 ***ERROR*** Relational operator applied to non-numeric operand
+116:5 ***ERROR*** Attempt to call a non-function
+117:5 ***ERROR*** Function call with wrong number of args
+118:5 ***ERROR*** Function call with wrong number of args
+119:12 ***ERROR*** Type of actual does not match type of formal
+120:7 ***ERROR*** Type of actual does not match type of formal
+120:12 ***ERROR*** Type of actual does not match type of formal
+121:5 ***ERROR*** Attempt to call a non-function
+124:5 ***ERROR*** Type mismatch
+125:5 ***ERROR*** Struct variable assignment
+126:12 ***ERROR*** Attempt to read a struct name
+127:17 ***ERROR*** Logical operator applied to non-bool operand
+128:11 ***ERROR*** Logical operator applied to non-bool operand
+128:18 ***ERROR*** Logical operator applied to non-bool operand
+131:12 ***ERROR*** Return with a value in a void function
+134:19 ***ERROR*** Arithmetic operator applied to non-numeric operand
+135:17 ***ERROR*** Arithmetic operator applied to non-numeric operand
+136:5 ***ERROR*** Type mismatch
+139:18 ***ERROR*** Arithmetic operator applied to non-numeric operand
+139:28 ***ERROR*** Relational operator applied to non-numeric operand
+139:34 ***ERROR*** Relational operator applied to non-numeric operand
+141:9 ***ERROR*** Equality operator applied to functions
+145:9 ***ERROR*** Function call with wrong number of args
+145:9 ***ERROR*** Equality operator applied to functions
+149:9 ***ERROR*** Equality operator applied to struct names
+153:9 ***ERROR*** Equality operator applied to struct variables

@@ -1,0 +1,96 @@
+int test() {
+    int a;
+    bool b;
+    a(int) = 1;
+    b(bool) = true;
+    return a(int);
+}
+
+void hello() {
+}
+
+struct Point{
+    int x;
+    int y;
+};
+
+struct Point p;
+int f(int x, bool b) {
+}
+
+void g() {
+    int a;
+    bool b;
+    p(Point).x(int) = a(int);
+    b(bool) = (a(int) == 3);
+    f(int,bool->int)((a(int) + (p(Point).y(int) * 2)), b(bool));
+    g(->void)();
+}
+
+int x;
+int y;
+int z;
+bool b;
+bool c;
+void d() {
+    int tmp1;
+    int tmp2;
+    tmp1(int) = 3;
+    tmp2(int) = 2;
+    c(bool) = true;
+    tmp1(int)++;
+    tmp1(int)--;
+    cin >> tmp2(int);
+    cin >> c(bool);
+    cout << tmp2(int);
+    cout << c(bool);
+    if ((x(int) == 3)) {
+        z(int) = 3;
+    }
+    if ((b(bool) == false)) {
+        x(int) = ((4 + (3 * 5)) - y(int));
+        while (c(bool)) {
+            y(int) = ((y(int) * 2) + x(int));
+            c(bool) = false;
+        }
+    }
+    else {
+        x(int) = 0;
+    }
+    while (c(bool)) {
+    }
+    d(->void)();
+    return;
+}
+
+bool a() {
+    b(bool) = true;
+    c(bool) = false;
+    p(Point).x(int) = 1;
+    return true;
+}
+
+void math(int result, bool value) {
+    int tmp1;
+    int tmp2;
+    tmp1(int) = 3;
+    tmp2(int) = 2;
+    result(int) = tmp1(int);
+    result(int) = (tmp1(int) + tmp2(int));
+    result(int) = (tmp1(int) - tmp2(int));
+    result(int) = (tmp1(int) * tmp2(int));
+    result(int) = (tmp1(int) / tmp2(int));
+    value(bool) = (b(bool) && c(bool));
+    value(bool) = (b(bool) || c(bool));
+    value(bool) = (tmp1(int) == tmp2(int));
+    value(bool) = (tmp1(int) != tmp2(int));
+    value(bool) = (tmp1(int) < tmp2(int));
+    value(bool) = (tmp1(int) > tmp2(int));
+    value(bool) = (tmp1(int) <= tmp2(int));
+    value(bool) = (tmp1(int) >= tmp2(int));
+}
+
+int function() {
+    return 1;
+}
+
