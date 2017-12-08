@@ -1,6 +1,6 @@
 ###
 # This Makefile can be used to make a parser for the cimple language
-# (parser.class) and to make a program (P5.class) that tests the parser and
+# (parser.class) and to make a program (P6.class) that tests the parser and
 # the unparse methods in ast.java.
 #
 # make clean removes all generated files.
@@ -10,8 +10,8 @@ JC = javac
 CP = ../deps_src/java-cup-11b.jar:../deps_src/java-cup-11b-runtime.jar:../deps_src:.
 FLAGS = -cp $(CP)
 
-P5.class: P5.java parser.class Yylex.class ASTnode.class
-	$(JC) $(FLAGS) -g P5.java
+P6.class: P6.java parser.class Yylex.class ASTnode.class
+	$(JC) $(FLAGS) -g P6.java
 
 parser.class: parser.java ASTnode.class Yylex.class ErrMsg.class
 	$(JC) $(FLAGS) parser.java
@@ -56,8 +56,8 @@ EmptySymTableException.class: EmptySymTableException.java
 # test
 #
 test:
-	java $(FLAGS) P5 test.cimple test.out
-	java $(FLAGS) P5 typeErrors.cimple typeErrors.out
+	java $(FLAGS) P6 test.cimple test.out
+	java $(FLAGS) P6 typeErrors.cimple typeErrors.out
 
 ###
 # clean
