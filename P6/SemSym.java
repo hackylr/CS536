@@ -6,9 +6,11 @@ import java.util.*;
  */
 public class SemSym {
     private Type type;
+    private int offset;
     
     public SemSym(Type type) {
         this.type = type;
+	this.offset = 0;
     }
     
     public Type getType() {
@@ -17,6 +19,16 @@ public class SemSym {
     
     public String toString() {
         return type.toString();
+    }
+
+    public int getOffset()
+    {
+	return offset; 
+    }
+	
+    public void setOffset(int offset)
+    {
+	this.offset = offset;
     }
 }
 
