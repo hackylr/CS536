@@ -114,7 +114,12 @@ abstract class ASTnode {
         for (int k=0; k<indent; k++) p.print(" ");
     }
 
-    public void codeGen(PrintWriter p) {
+    public void codeGen(PrintWriter p){
+    }
+
+    public void codeGen(PrintWriter p, String myReturn)
+    {
+
     }
 
     protected void generateWithComment(String opcode, String comment,
@@ -219,7 +224,9 @@ abstract class ASTnode {
     {
 		return Codegen.nextLabel();
     }
-
+	
+    static boolean isLocal = true;
+    public int offSet = 0;
 }
 
 // **********************************************************************
@@ -239,8 +246,8 @@ class ProgramNode extends ASTnode {
      */
     public void nameAnalysis() {
         SymTable symTab = new SymTable();
-        myDeclList.nameAnalysis(symTab);
-	
+        isLocal = false;
+	myDeclList.nameAnalysis(symTab);
 	SemSym main = symTab.lookupGlobal("main");
 	if(main == null || !(main instanceof FnSym))
 	{
@@ -262,7 +269,7 @@ class ProgramNode extends ASTnode {
     public void unparse(PrintWriter p, int indent) {
         myDeclList.unparse(p, indent);
     }
-
+   
     // 1 kid
     private DeclListNode myDeclList;
 }
@@ -287,10 +294,32 @@ class DeclListNode extends ASTnode {
      * decls in the list.
      */    
     public void nameAnalysis(SymTable symTab, SymTable globalTab) {
-        for (DeclNode node : myDecls) {
+	offSet = declListOffset;	
+
+	for (DeclNode node : myDecls) {
             if (node instanceof VarDeclNode) {
                 ((VarDeclNode)node).nameAnalysis(symTab, globalTab);
-            } else {
+
+		if(isLocal)
+		{
+			
+			((VarDeclNode)node).setVarDeclOffset(offSet);
+			offSet -= 4;
+			
+		}
+
+		else
+		{
+			//TODO setVarDeclOffset is in VarDeclNode
+			//TODO Not sure about -1
+			((VarDeclNode)node).setVarDeclOffset(-1);
+			((VarDeclNode)node).makeGlobal();
+		}
+
+            }	 
+
+	    else 
+            {
                 node.nameAnalysis(symTab);
             }
         }
@@ -322,9 +351,18 @@ class DeclListNode extends ASTnode {
             node.codeGen(p);
         }
     }
- 
+
+    //TODO Helper function of setOffset and getOffset
+
+
+    public int getSize()
+    {
+	return this.offSet - this.declListOffset;
+    }
+    
     // list of kids (DeclNodes)
     private List<DeclNode> myDecls;
+    private int declListOffset = 0;
 }
 
 class FormalsListNode extends ASTnode {
@@ -342,24 +380,24 @@ class FormalsListNode extends ASTnode {
     public List<Type> nameAnalysis(SymTable symTab) {
         List<Type> typeList = new LinkedList<Type>();
         
+	isLocal = true;
+	offSet = formalsListOffset;
+	
 	for (FormalDeclNode node : myFormals) {
             SemSym sym = node.nameAnalysis(symTab);
-            if (sym != null) {
-                
+            
+	    //TODO setOffset function in FormalDeclNode
+	    node.setOffset(offSet);
+	    offSet -= 4;
+	    if (sym != null) {          
 		
-		sym.setOffset(sym.getOffset());
 		typeList.add(sym.getType());
-		dec_offset(sym);
 		
             }
         }
         return typeList;
     }
 
-    public int dec_offset(SemSym sym)
-    {
-	return sym.getOffset() - 4;
-    }    
     
     /**
      * Return the number of formals in this list.
@@ -369,12 +407,11 @@ class FormalsListNode extends ASTnode {
     }
     
     public void codeGen(PrintWriter p) {
-        int currOffset = 8;
+        int offSet = 8;
 	for (FormalDeclNode node : myFormals) {
-            currOffset += 4;
+            offSet += 4;
         }
-	Codegen.p = p;
-	generate("addu", "$fp", "$sp", currOffset);
+	generate("addu", "$fp", "$sp", offSet);
     }
 
     public void unparse(PrintWriter p, int indent) {
@@ -388,8 +425,24 @@ class FormalsListNode extends ASTnode {
         } 
     }
 
+    public int getOffset()
+    {
+	return this.offSet;
+    }
+
+    public void setOffset(int formalsListOffset)
+    {
+	this.formalsListOffset = formalsListOffset;
+    }
+
+    public int getSize()
+    {
+	return this.offSet = this.formalsListOffset;
+    }
+
     // list of kids (FormalDeclNodes)
     private List<FormalDeclNode> myFormals;
+    private int formalsListOffset = 0;
 }
 
 class FnBodyNode extends ASTnode {
@@ -405,7 +458,11 @@ class FnBodyNode extends ASTnode {
      * - process the statement list
      */
     public void nameAnalysis(SymTable symTab) {
-        myDeclList.nameAnalysis(symTab);
+        isLocal = true;
+	myDeclList.setOffset(this.declListOffset);
+	myDeclList.nameAnalysis(symTab);
+
+	myStmtList.setOffset(myDeclList.getOffset());
         myStmtList.nameAnalysis(symTab);
     }    
  
@@ -416,8 +473,8 @@ class FnBodyNode extends ASTnode {
         myStmtList.typeCheck(retType);
     }    
         
-    public void codeGen(PrintWriter p) {
-	myStmtList.codeGen(p);
+    public void codeGen(PrintWriter p, String myReturn) {
+	myStmtList.codeGen(p, myReturn);
     } 
  
     public void unparse(PrintWriter p, int indent) {
@@ -425,9 +482,26 @@ class FnBodyNode extends ASTnode {
         myStmtList.unparse(p, indent);
     }
 
+    public int getOffset()
+    {
+	return offSet;
+    }
+
+    public void setOffset(int fnBodyOffset)
+    {
+	this.declListOffset = fnBodyOffset;
+    }
+
+    public int getSize()
+    {
+	return myDeclList.getSize() + myStmtList.getSize();
+    }
+
     // 2 kids
     private DeclListNode myDeclList;
     private StmtListNode myStmtList;
+    private int decllistOffset = 0;
+    private int stmtListOffset = 0;
 }
 
 class StmtListNode extends ASTnode {
@@ -440,8 +514,12 @@ class StmtListNode extends ASTnode {
      * Given a symbol table symTab, process each statement in the list.
      */
     public void nameAnalysis(SymTable symTab) {
-        for (StmtNode node : myStmts) {
-            node.nameAnalysis(symTab);
+        
+	offset = stmListOffset;
+	for (StmtNode node : myStmts) {
+            node.setOffset(offSet);
+	    node.nameAnalysis(symTab);
+	    offSet = node.getOffset();
         }
     }    
     
@@ -460,6 +538,19 @@ class StmtListNode extends ASTnode {
             it.next().unparse(p, indent);
         }
     }
+
+    public void codeGen(PrintWriter p, String myReturn)
+    {
+	for(StmtNode node: myStmts)
+	{
+	    if(node instanceof ReturnStmtNode)
+		((ReturnStmtNode)node).codeGen(p, myReturn);
+	    else
+	    {
+		node.codeGen(p);
+	    }
+	}
+    }	
 
     // list of kids (StmtNodes)
     private List<StmtNode> myStmts;
@@ -627,6 +718,11 @@ class VarDeclNode extends DeclNode {
         p.print(" ");
         p.print(myId.name());
         p.println(";");
+    }
+
+    public void makeGlobal()
+    {
+	myId.makeGlobal();
     }
 
     // 3 kids
@@ -1675,6 +1771,16 @@ class IdNode extends ExpNode {
         if (mySym != null) {
             p.print("(" + mySym + ")");
         }
+    }
+
+    public void makeGlobal()
+    {
+	mySym.makeGlobal();
+    }
+
+    public boolean isLocal()
+    {
+	return mySym.isLocal();
     }
 
     private int myLineNum;
