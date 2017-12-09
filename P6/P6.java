@@ -147,6 +147,13 @@ public class P6 {
 		astRoot.typeCheck();	//perform type checking
 		
 		astRoot.unparse(outFile, 0);
+
+		Codegen.p = outFile;
+
+		astRoot.codeGen(Codegen.p);
+
+		Codegen.p.close();	
+
 		return P6.RESULT_CORRECT;
 	}
 	

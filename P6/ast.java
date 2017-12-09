@@ -114,6 +114,9 @@ abstract class ASTnode {
         for (int k=0; k<indent; k++) p.print(" ");
     }
 
+    public void codeGen(PrintWriter p) {
+    }
+
     protected void generateWithComment(String opcode, String comment,
                                         String arg1, String arg2, String arg3)
     {
@@ -137,82 +140,85 @@ abstract class ASTnode {
 		Codegen.generateWithComment(opcode, comment, "", "", "");
     }
 	
-	public static void generate(String opcode, String arg1, String arg2,
+    protected void generate(String opcode, String arg1, String arg2,
                                 String arg3) 
-	{
+    {
 		Codegen.generate(opcode, arg1, arg2, arg3);
-	}
+    }
 	
-	protected void generate(String opcode, String arg1, String arg2)
-	{	
+    protected void generate(String opcode, String arg1, String arg2)
+    {	
 		Codegen.generate(opcode, arg1, arg2, "");
-	}
-	protected void generate(String opcode, String arg1)
-	{
+    }
+
+    protected void generate(String opcode, String arg1)
+    {
 		Codegen.generate(opcode, arg1, "", "");
-	}
-	protected void generate(String opcode){
+    }
+
+    protected void generate(String opcode){
 		Codegen.generate(opcode, "", "", "");
-	}
+    }
 
-	protected void generate(String opcode, String arg1, String arg2,
+    protected void generate(String opcode, String arg1, String arg2,
 							int arg3)
-	{
+    {
 		Codegen.generate(opcode, arg1, arg2, arg3);
-	}
+    }
 
-	protected void generate(String opcode, String arg1, int arg2)
-	{
+    protected void generate(String opcode, String arg1, int arg2)
+    {
 		Codegen.generate(opcode, arg1, arg2);
-	}
+    }
 
-	protected void generateIndexed(String opcode, String arg1, String arg2,
-							int arg3, String comment)
-	{
+    protected void generateIndexed(String opcode, String arg1, String arg2,
+		int arg3, String comment)
+    {
 		Codegen.generateIndexed(opcode, arg1, arg2, arg3, comment);
-	}
+    }
 
-	protected void generateIndexed(String opcode, String arg1, String arg2,
+    protected void generateIndexed(String opcode, String arg1, String arg2,
 							int arg3)
-	{
+    {
 		Codegen.generateIndexed(opcode, arg1, arg2, arg3, "");
-	}
+    }
 
-	protected void generateLabeled(String label, String opcode,
+    protected void generateLabeled(String label, String opcode,
 							String comment, String arg1)
-	{
+    {
 		Codegen.generateLabeled(label, opcode, comment, arg1);
-	}
-	protected void generateLabeled(String label, String opcode,
-							String comment)
-	{
-		Codegen.generateLabeled(label, opcode, comment, "");
-	}
+    }
 
-	protected void genPush(String s)
-	{
+    protected void generateLabeled(String label, String opcode,
+							String comment)
+    {
+		Codegen.generateLabeled(label, opcode, comment, "");
+    }
+
+    protected void genPush(String s)
+    {
 		Codegen.genPush(s);
-	}
+    }
 	
-	protected void genPop(String s)
-	{
+    protected void genPop(String s)
+    {
 		Codegen.genPop(s);
-	}
+    }
 	
-	protected void genLabel(String label, String comment)
-	{
+    protected void genLabel(String label, String comment)
+    {
 		Codegen.genLabel(label, comment);
-	}
+    }
 	
-	protected void genLabel(String label)
-	{
+    protected void genLabel(String label)
+    {
 		Codegen.genLabel(label, "");
-	}
+    }
 	
-	protected String nextLabel()
-	{
+    protected String nextLabel()
+    {
 		return Codegen.nextLabel();
-	}
+    }
 
 }
 
@@ -248,7 +254,11 @@ class ProgramNode extends ASTnode {
     public void typeCheck() {
         myDeclList.typeCheck();
     }   
- 
+
+    public void codeGen(PrintWriter p) {
+	myDeclList.codeGen(p);
+    } 
+
     public void unparse(PrintWriter p, int indent) {
         myDeclList.unparse(p, indent);
     }
@@ -307,6 +317,12 @@ class DeclListNode extends ASTnode {
         }
     }
 
+    public void codeGen(PrintWriter p) {
+        for (DeclNode node : myDecls) {
+            node.codeGen(p);
+        }
+    }
+ 
     // list of kids (DeclNodes)
     private List<DeclNode> myDecls;
 }
@@ -325,7 +341,8 @@ class FormalsListNode extends ASTnode {
      */
     public List<Type> nameAnalysis(SymTable symTab) {
         List<Type> typeList = new LinkedList<Type>();
-        for (FormalDeclNode node : myFormals) {
+        
+	for (FormalDeclNode node : myFormals) {
             SemSym sym = node.nameAnalysis(symTab);
             if (sym != null) {
                 
@@ -351,6 +368,15 @@ class FormalsListNode extends ASTnode {
         return myFormals.size();
     }
     
+    public void codeGen(PrintWriter p) {
+        int currOffset = 8;
+	for (FormalDeclNode node : myFormals) {
+            currOffset += 4;
+        }
+	Codegen.p = p;
+	generate("addu", "$fp", "$sp", currOffset);
+    }
+
     public void unparse(PrintWriter p, int indent) {
         Iterator<FormalDeclNode> it = myFormals.iterator();
         if (it.hasNext()) { // if there is at least one element
@@ -389,7 +415,11 @@ class FnBodyNode extends ASTnode {
     public void typeCheck(Type retType) {
         myStmtList.typeCheck(retType);
     }    
-          
+        
+    public void codeGen(PrintWriter p) {
+	myStmtList.codeGen(p);
+    } 
+ 
     public void unparse(PrintWriter p, int indent) {
         myDeclList.unparse(p, indent);
         myStmtList.unparse(p, indent);
