@@ -233,6 +233,8 @@ abstract class ASTnode {
     final String A0 = Codegen.A0;
     final String T0 = Codegen.T0;
     final String T1 = Codegen.T1;
+    final String TRUE = Codegen.TRUE;
+    final String FALSE = Codegen.FALSE;
 
     static boolean isLocal = true;
     public int offSet = 0;
@@ -1167,7 +1169,7 @@ class AssignStmtNode extends StmtNode {
     public void codeGen(PrintWriter p)
     {
 	myAssign.codeGen(p);
-	genPop(Codegen.T0);
+	genPop(T0);
     }
 
     public void setOffSet (int assignOffSet)
@@ -1177,7 +1179,7 @@ class AssignStmtNode extends StmtNode {
 
     public int getOffSet()
     {
-	return this.assignOffSet;
+	return assignOffSet;
     }
 
     public int getSize()
@@ -1238,7 +1240,7 @@ class PostIncStmtNode extends StmtNode {
 
     public int getOffSet()
     {
-	return this.incOffSet;
+	return incOffSet;
     }
 
     public int getSize()
@@ -1299,7 +1301,7 @@ class PostDecStmtNode extends StmtNode {
 
     public int getOffSet()
     {
-	return this.decOffSet;
+	return decOffSet;
     }
 
     public int getSize()
@@ -1359,8 +1361,20 @@ class ReadStmtNode extends StmtNode {
     public void codeGen(PrintWriter p)
     {
 	((IdNode)myExp).genAddr();
-	generate("li", Codegen.V0, 5);
+	generate("li", V0, 5);
 	generate ("syscall");
+
+	generateIndexed("lw", T0, SP, 4);
+	
+	//TODO for the isBoolType nonsense
+
+	generateIndexed("sw", V0, T0, 0);
+	genPop(V0);
+    }
+
+    public int getOffSet()
+    {
+	return readOffSet;
     }
 
     public void setOffSet(int readOffSet)
@@ -1368,11 +1382,6 @@ class ReadStmtNode extends StmtNode {
 	this.readOffSet = readOffSet;
     }
 
-    public int getOffSet()
-    {
-	return this.readOffSet;
-    }
-	
     public int getSize()
     {
 	return 0;
@@ -1429,9 +1438,45 @@ class WriteStmtNode extends StmtNode {
         myExp.unparse(p, 0);
         p.println(";");
     }
+    
+     //TODO
+    public void codeGen(PrintWriter p)
+    {
+	myExp.codeGen(p);
+	genPop(A0);
+	
+	if(typeVar.isStringType())
+	{
+	    generate("li", V0, 4);
+	}
+
+	else if(typeVar.isIntType() || typeVar.isBoolType())
+	{
+	    generate("li", V0, 1);
+	}
+
+	generate("syscall");
+    }
+    
+    public int getOffSet()
+    {
+	return writeOffSet;
+    }
+
+    public void setOffSet(int writeOffSet)
+    {
+	this.writeOffSet = writeOffSet;
+    }
+	
+    public int getSize()
+    {
+	return 0;
+    }
 
     // 1 kid
     private ExpNode myExp;
+    private int writeOffSet;
+    private Type typeVar;
 }
 
 class IfStmtNode extends StmtNode {
@@ -1488,10 +1533,36 @@ class IfStmtNode extends StmtNode {
         p.println("}");
     }
 
+    public void codeGen(PrintWriter p)
+    {
+	String trueLab = nextLabel();
+   	String doneLab = nextLabel();
+   	myExp.genJumpCode(p, trueLab, doneLab);
+   	genLabel(trueLab);
+   	myStmtList.codeGen(p);
+   	genLabel(doneLab);
+    }
+
+    public int getOffSet()
+    {
+	return ifOffSet + myDeclList.getSize() + myStmtList.getSize();
+    }
+
+    public void setOffSet(int ifOffSet)
+    {
+	this.ifOffSet = ifOffSet;
+    }
+
+    public int getSize()
+    {
+	return myDeclList.getSize() + myStmtList.getSize();
+    }
+
     // e kids
     private ExpNode myExp;
     private DeclListNode myDeclList;
     private StmtListNode myStmtList;
+    private int ifOffSet;
 }
 
 class IfElseStmtNode extends StmtNode {
@@ -1572,12 +1643,46 @@ class IfElseStmtNode extends StmtNode {
         p.println("}");        
     }
 
+    public void codeGen(PrintWriter p)
+    {
+	String trueLab = nextLabel();
+	String falseLab = nextLabel();
+   	String doneLab = nextLabel();
+   	myExp.genJumpCode(p, trueLab, falseLab);
+
+   	genLabel(trueLab);
+   	myThenStmtList.codeGen(p);
+	generate("b", doneLab);
+
+   	genLabel(falseLab);
+	myElseStmtList.codeGen(p);
+	genLabel(doneLab);
+    }
+
+    //TODO, not sure about what to return exactly for getOffSet()
+    public int getOffSet()
+    {
+	return myElseStmtList.getOffSet();
+    }
+
+    public void setOffSet(int ifElseOffSet)
+    {
+	this.ifElseOffSet = ifElseOffSet;
+    }
+
+    public int getSize()
+    {
+	return myThenDeclList.getSize() + myThenStmtList.getSize() + 
+		myElseDeclList.getSize() + myElseStmtList.getSize();
+    }
+
     // 5 kids
     private ExpNode myExp;
     private DeclListNode myThenDeclList;
     private StmtListNode myThenStmtList;
     private StmtListNode myElseStmtList;
     private DeclListNode myElseDeclList;
+    private int ifElseOffSet;
 }
 
 class WhileStmtNode extends StmtNode {
@@ -1634,10 +1739,42 @@ class WhileStmtNode extends StmtNode {
         p.println("}");
     }
 
+    public void codeGen(PrintWriter p)
+    {
+	String loopLab = nextLabel();
+   	String doneLab = nextLabel();
+
+   	genLabel(loopLab);
+   	myExp.codeGen(p);
+	genPop(T0);
+	generate("beq",T0, "0", doneLab);
+
+	myStmtList.codeGen(p);
+	generate("b", loopLab);
+	genLabel(doneLab);
+    }
+
+    //TODO, not sure about what to return exactly for getOffSet()
+    public int getOffSet()
+    {
+	return myStmtList.getOffSet();
+    }
+
+    public void setOffSet(int whileOffSet)
+    {
+	this.whileOffSet = whileOffSet;
+    }
+
+    public int getSize()
+    {
+	return 0;
+    }
+
     // 3 kids
     private ExpNode myExp;
     private DeclListNode myDeclList;
     private StmtListNode myStmtList;
+    private int whileOffSet;
 }
 
 class CallStmtNode extends StmtNode {
@@ -1666,8 +1803,31 @@ class CallStmtNode extends StmtNode {
         p.println(";");
     }
 
+    public void codeGen(PrintWriter p)
+    {
+	myCall.codeGen(p);
+	genPop(V0);
+    }
+
+    public int getOffSet()
+    {
+	return callOffSet;
+    }
+
+    public void setOffSet(int callOffSet)
+    {
+	this.callOffSet = callOffSet;
+    }
+
+    public int getSize()
+    {
+	return 0;
+    }
+
+
     // 1 kid
     private CallExpNode myCall;
+    private int callOffSet;
 }
 
 class ReturnStmtNode extends StmtNode {
@@ -1722,8 +1882,34 @@ class ReturnStmtNode extends StmtNode {
         p.println(";");
     }
 
+    public void codeGen(PrintWriter p, String myReturn)
+    {
+	if(myExp != null)
+	{
+		myExp.codeGen(p);
+		genPop(V0);
+	}
+	generate("b", myReturn);
+    }
+
+    public int getOffSet()
+    {
+	return returnOffSet;
+    }
+
+    public void setOffSet(int returnOffSet)
+    {
+	this.returnOffSet = returnOffSet;
+    }
+
+    public int getSize()
+    {
+	return 0;
+    }
+
     // 1 kid
     private ExpNode myExp; // possibly null
+    private int returnOffSet;
 }
 
 // **********************************************************************
@@ -1824,7 +2010,14 @@ class StringLitNode extends ExpNode {
     //TODO
     public void codeGen(PrintWriter p)
     {
+	Codegen.p = p;
+	String stringLab = nextLabel();
 	generate(".data");
+	generate(stringLab + ".aciiz " + myStrVal);
+	generate(".text");
+
+	generate("la", T0, stringLab);
+	genPush(T0);
 	
     }
 
@@ -1866,7 +2059,7 @@ class TrueNode extends ExpNode {
 
     public void codeGen(PrintWriter p)
     {
-	generate("li", T0, Codegen.TRUE);
+	generate("li", T0, TRUE);
 	genPush(T0);
     }
 
@@ -1912,7 +2105,7 @@ class FalseNode extends ExpNode {
 
     public void codeGen(PrintWriter p)
     {
-	generate("li", T0, Codegen.FALSE);
+	generate("li", T0, FALSE);
 	genPush(T0);
     }
 
@@ -2005,6 +2198,59 @@ class IdNode extends ExpNode {
 
 
     //TODO ALL CODEGEN methods
+    
+    public void genJumpAndLink()
+    {
+	if(myStrVal.equals("main")) {
+	    generate("jal", "main");
+	}
+	else {
+	    generate("_" + myStrVal);
+	}
+    }
+
+
+    public void codeGen(PrintWriter p)
+    {
+	if(mySym.isLocal())
+	{
+	    generateIndexed("lw", T0, FP, mySym.getOffSet());
+	}
+	else
+	{
+	    generate("lw", T0, "_" + myStrVal);
+	}
+    }
+
+    public void genAddr()
+    {
+	if(mySym.isLocal())
+	{
+		generateIndexed("la", T0, FP, mySym.getOffSet());
+	}
+	else
+	{
+		generate("la", T0, "_" + myStrVal);
+	}
+
+	genPush(T0);
+    }
+
+    public void genJumpCode(PrintWriter p, String trueLab, String falseLab)
+    {
+	if(mySym.isLocal())
+	{
+		generateIndexed("lw", T0, FP, mySym.getOffSet());
+	}
+	else
+	{
+		generate("lw", T0, "_" + myStrVal);
+	}
+	
+	generate("beq", T0, "0", falseLab);
+	generate("b", trueLab);
+    }
+
 
     public int getOffSet()
     {
@@ -2253,7 +2499,26 @@ class AssignNode extends ExpNode {
     }
 
     //TODO codeGen and genJumpCode
+    public void codeGen(PrintWriter p)
+    {
+	myExp.codeGen(p);
+	((IdNode)myLhs).genAddr();
+	genPop(T0);
+	generateIndexed("lw", T1, SP, 4);
+	generateIndexed("sw", T1, T0, 0);
+    }
 
+    public void genJumpCode(PrintWriter p, String trueLab, String falseLab)
+    {
+	myExp.codeGen(p);
+	((IdNode)myLhs).genAddr();
+	genPop(T0);
+	genPop(T1);
+	generateIndexed("sw", T1, SP, 0);
+	generate("beq", T1, "0", falseLab);
+	generate("b", trueLab);
+
+    }
 
     // 2 kids
     private ExpNode myLhs;
@@ -2341,11 +2606,11 @@ class CallExpNode extends ExpNode {
 	genPush(V0);
     }
 
-    public void genJumpCode(String trueLab, String falseLab)
+    public void genJumpCode(PrintWriter p, String trueLab, String falseLab)
     {
 	myExpList.codeGen(p);
 	myId.genJumpAndLink();
-	generate("beq", Codegen.V0, "$zero", falseLab);
+	generate("beq", V0, "0", falseLab);
 	generate("b", trueLab);
     }
 
@@ -2463,7 +2728,7 @@ class UnaryMinusNode extends UnaryExpNode {
     {
 	myExp.codeGen(p);
 	genPop(T0);
-	generate("sub", T0, "$zero", T0);
+	generate("sub", T0, "0", T0);
 	genPush(T0);
     }
 }
@@ -2503,13 +2768,13 @@ class NotNode extends UnaryExpNode {
     {
 	myExp.codeGen(p);
 	genPop(T0);
-	generate("xor", T0, T0, Codegen.TRUE);
+	generate("xor", T0, T0, TRUE);
 	genPush(T0);
     }
 
-    public void genJumpCode(String trueLab, String falseLab)
+    public void genJumpCode(PrintWriter p, String trueLab, String falseLab)
     {
-	myExp.genJumpCode(falseLab, trueLab);
+	myExp.genJumpCode(p, falseLab, trueLab);
     }
 
 }
@@ -2810,6 +3075,21 @@ class AndNode extends LogicalExpNode {
         myExp2.unparse(p, 0);
         p.print(")");
     }
+
+    //TODO
+    public void codeGen(PrintWriter p)
+    {
+	String falseLab = nextLabel();
+    }
+
+    public void genJumpCode(PrintWriter p, String trueLab, String falseLab)
+    {
+	String newLab = nextLabel();
+	myExp1.genJumpCode(p, newLab, falseLab);
+	genLabel(newLab);
+	myExp2.genJumpCode(p, trueLab, falseLab);
+	
+    }
 }
 
 class OrNode extends LogicalExpNode {
@@ -2839,6 +3119,7 @@ class EqualsNode extends EqualityExpNode {
         p.print(")");
     }
 
+    //TODO
     public void codeGen(PrintWriter p) 
     {
         // step 1: evaluate both operands
