@@ -226,7 +226,7 @@ abstract class ASTnode {
     }
 	
     static boolean isLocal = true;
-    public int offSet = 0;
+    public int OffSet = 0;
     final String T0 = Codegen.T0;
     final String T1 = Codegen.T1;
 }
@@ -250,10 +250,12 @@ class ProgramNode extends ASTnode {
         SymTable symTab = new SymTable();
         isLocal = false;
 	myDeclList.nameAnalysis(symTab);
+	
 	SemSym main = symTab.lookupGlobal("main");
 	if(main == null || !(main instanceof FnSym))
 	{
-	   ErrMsg.fatal(0,0, "No main function");
+	   ErrMsg.fatal(0, 0, "No main function");
+	   System.exit(-1);
 	} 
     }
     
@@ -296,7 +298,7 @@ class DeclListNode extends ASTnode {
      * decls in the list.
      */    
     public void nameAnalysis(SymTable symTab, SymTable globalTab) {
-	offSet = declListOffset;	
+	OffSet = declListOffSet;	
 
 	for (DeclNode node : myDecls) {
             if (node instanceof VarDeclNode) {
@@ -305,19 +307,15 @@ class DeclListNode extends ASTnode {
 		if(isLocal)
 		{
 			
-			((VarDeclNode)node).setVarDeclOffset(offSet);
-			offSet -= 4;
-			
+			//setVarDeclOffSet is in VarDeclNode
+			((VarDeclNode)node).setVarDeclOffSet(OffSet);
+			OffSet -= 4;
 		}
 
 		else
 		{
-			//TODO setVarDeclOffset is in VarDeclNode
-			//TODO Not sure about -1
-			((VarDeclNode)node).setVarDeclOffset(-1);
 			((VarDeclNode)node).makeGlobal();
 		}
-
             }	 
 
 	    else 
@@ -354,17 +352,22 @@ class DeclListNode extends ASTnode {
         }
     }
 
-    //TODO Helper function of setOffset and getOffset
+    public int getOffSet() {
+	return OffSet;
+    }
 
+    public void setOffSet(int declListOffSet) {
+	this.declListOffSet = declListOffSet;
+    } 
 
     public int getSize()
     {
-	return this.offSet - this.declListOffset;
+	return OffSet - declListOffSet;
     }
     
     // list of kids (DeclNodes)
     private List<DeclNode> myDecls;
-    private int declListOffset = 0;
+    private int declListOffSet = 0;
 }
 
 class FormalsListNode extends ASTnode {
@@ -383,14 +386,14 @@ class FormalsListNode extends ASTnode {
         List<Type> typeList = new LinkedList<Type>();
         
 	isLocal = true;
-	offSet = formalsListOffset;
+	OffSet = formalsListOffSet;
 	
 	for (FormalDeclNode node : myFormals) {
             SemSym sym = node.nameAnalysis(symTab);
             
-	    //TODO setOffset function in FormalDeclNode
-	    node.setOffset(offSet);
-	    offSet -= 4;
+	    //TODO setOffSet function in FormalDeclNode
+	    node.setOffSet(OffSet);
+	    OffSet -= 4;
 	    if (sym != null) {          
 		
 		typeList.add(sym.getType());
@@ -409,11 +412,11 @@ class FormalsListNode extends ASTnode {
     }
     
     public void codeGen(PrintWriter p) {
-        int offSet = 8;
+        int OffSet = 8;
 	for (FormalDeclNode node : myFormals) {
-            offSet += 4;
+            OffSet += 4;
         }
-	generate("addu", "$fp", "$sp", offSet);
+	generate("addu", "$fp", "$sp", OffSet);
     }
 
     public void unparse(PrintWriter p, int indent) {
@@ -427,24 +430,24 @@ class FormalsListNode extends ASTnode {
         } 
     }
 
-    public int getOffset()
+    public int getOffSet()
     {
-	return this.offSet;
+	return this.OffSet;
     }
 
-    public void setOffset(int formalsListOffset)
+    public void setOffSet(int formalsListOffSet)
     {
-	this.formalsListOffset = formalsListOffset;
+	this.formalsListOffSet = formalsListOffSet;
     }
 
     public int getSize()
     {
-	return this.offSet = this.formalsListOffset;
+	return this.OffSet = this.formalsListOffSet;
     }
 
     // list of kids (FormalDeclNodes)
     private List<FormalDeclNode> myFormals;
-    private int formalsListOffset = 0;
+    private int formalsListOffSet = 0;
 }
 
 class FnBodyNode extends ASTnode {
@@ -461,10 +464,10 @@ class FnBodyNode extends ASTnode {
      */
     public void nameAnalysis(SymTable symTab) {
         isLocal = true;
-	myDeclList.setOffset(this.declListOffset);
+	myDeclList.setOffSet(this.declListOffSet);
 	myDeclList.nameAnalysis(symTab);
 
-	myStmtList.setOffset(myDeclList.getOffset());
+	myStmtList.setOffSet(myDeclList.getOffSet());
         myStmtList.nameAnalysis(symTab);
     }    
  
@@ -484,14 +487,14 @@ class FnBodyNode extends ASTnode {
         myStmtList.unparse(p, indent);
     }
 
-    public int getOffset()
+    public int getOffSet()
     {
-	return offSet;
+	return OffSet;
     }
 
-    public void setOffset(int fnBodyOffset)
+    public void setOffSet(int fnBodyOffSet)
     {
-	this.declListOffset = fnBodyOffset;
+	this.declListOffSet = fnBodyOffSet;
     }
 
     public int getSize()
@@ -502,8 +505,8 @@ class FnBodyNode extends ASTnode {
     // 2 kids
     private DeclListNode myDeclList;
     private StmtListNode myStmtList;
-    private int decllistOffset = 0;
-    private int stmtListOffset = 0;
+    private int decllistOffSet = 0;
+    private int stmtListOffSet = 0;
 }
 
 class StmtListNode extends ASTnode {
@@ -517,11 +520,11 @@ class StmtListNode extends ASTnode {
      */
     public void nameAnalysis(SymTable symTab) {
         
-	offset = stmListOffset;
+	OffSet = stmListOffSet;
 	for (StmtNode node : myStmts) {
-            node.setOffset(offSet);
+            node.setOffSet(OffSet);
 	    node.nameAnalysis(symTab);
-	    offSet = node.getOffset();
+	    OffSet = node.getOffSet();
         }
     }    
     
@@ -737,9 +740,9 @@ class VarDeclNode extends DeclNode {
     }
 
     
-    public void setVarDeclOffset(int varDeclOffset)
+    public void setVarDeclOffSet(int varDeclOffSet)
     {
-	myId.setOffset(varDeclOffset);
+	myId.setOffSet(varDeclOffSet);
     }
 
     public void makeGlobal()
@@ -809,13 +812,13 @@ class FnDeclNode extends DeclNode {
 	isLocal = true;
  
         // process the formals
-	myFormalsList.setOffset(0);
+	myFormalsList.setOffSet(0);
         List<Type> typeList = myFormalsList.nameAnalysis(symTab);
         if (sym != null) {
             sym.addFormals(typeList);
         }
         
-	myBody.setOffset(-myFormalsList.length()*4 - 8);
+	myBody.setOffSet(-myFormalsList.length()*4 - 8);
         myBody.nameAnalysis(symTab); // process the function body
         
         try {
@@ -921,9 +924,9 @@ class FormalDeclNode extends DeclNode {
         return sym;
     }    
     
-    public void setOffset(int formalDeclOffset)
+    public void setOffSet(int formalDeclOffSet)
     {
-	myId.setOffset(formalDeclOffset);
+	myId.setOffSet(formalDeclOffSet);
     }
 
     public void unparse(PrintWriter p, int indent) {
@@ -1126,14 +1129,14 @@ class AssignStmtNode extends StmtNode {
 	genPop(Codegen.T0);
     }
 
-    public void setOffset (int assignOffset)
+    public void setOffSet (int assignOffSet)
     {
-	this.assignOffset = assignOffset;
+	this.assignOffSet = assignOffSet;
     }
 
-    public int getOffset()
+    public int getOffSet()
     {
-	return this.assignOffset;
+	return this.assignOffSet;
     }
 
     public int getSize()
@@ -1143,7 +1146,7 @@ class AssignStmtNode extends StmtNode {
 
     // 1 kid
     private AssignNode myAssign;
-    private int assignOffset;
+    private int assignOffSet;
 }
 
 class PostIncStmtNode extends StmtNode {
@@ -1187,14 +1190,14 @@ class PostIncStmtNode extends StmtNode {
 	generateIndexed("sw", T0, T1, 0);
     }
 
-    public void setOffset(int incOffset)
+    public void setOffSet(int incOffSet)
     {
-	this.incOffset = incOffset;
+	this.incOffSet = incOffSet;
     }
 
-    public int getOffset()
+    public int getOffSet()
     {
-	return this.incOffset;
+	return this.incOffSet;
     }
 
     public int getSize()
@@ -1204,7 +1207,7 @@ class PostIncStmtNode extends StmtNode {
 
     // 1 kid
     private ExpNode myExp;
-    private int incOffset;
+    private int incOffSet;
 }
 
 class PostDecStmtNode extends StmtNode {
@@ -1248,14 +1251,14 @@ class PostDecStmtNode extends StmtNode {
 	generateIndexed("sw", T0, T1, 0);
     }
 
-    public void setOffset(int decOffset)
+    public void setOffSet(int decOffSet)
     {
-	this.decOffset = decOffset;
+	this.decOffSet = decOffSet;
     }
 
-    public int getOffset()
+    public int getOffSet()
     {
-	return this.decOffset;
+	return this.decOffSet;
     }
 
     public int getSize()
@@ -1265,7 +1268,7 @@ class PostDecStmtNode extends StmtNode {
 
     // 1 kid
     private ExpNode myExp;
-    private int decOffset;
+    private int decOffSet;
 }
 
 class ReadStmtNode extends StmtNode {
@@ -1319,14 +1322,14 @@ class ReadStmtNode extends StmtNode {
 	generate ("syscall");
     }
 
-    public void setOffset(int readOffset)
+    public void setOffSet(int readOffSet)
     {
-	this.readOffset = readOffset;
+	this.readOffSet = readOffSet;
     }
 
-    public int getOffset()
+    public int getOffSet()
     {
-	return this.readOffset;
+	return this.readOffSet;
     }
 	
     public int getSize()
@@ -1336,7 +1339,7 @@ class ReadStmtNode extends StmtNode {
 
     // 1 kid (actually can only be an IdNode or an ArrayExpNode)
     private ExpNode myExp;
-    private int readOffset;
+    private int readOffSet;
 }
 
 class WriteStmtNode extends StmtNode {
@@ -1962,14 +1965,14 @@ class IdNode extends ExpNode {
 
     //TODO ALL CODEGEN methods
 
-    public int getOffset()
+    public int getOffSet()
     {
-	return mySym.getOffset();
+	return mySym.getOffSet();
     }
 
-    public void setOffset(int idOffset)
+    public void setOffSet(int idOffSet)
     {
-	mySym.setOffset(idOffset);
+	mySym.setOffSet(idOffSet);
     }
 
     public void makeGlobal()
