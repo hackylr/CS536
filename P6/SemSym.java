@@ -7,7 +7,8 @@ import java.util.*;
 public class SemSym {
     private Type type;
     private int offset;
-    
+    private boolean isLocal = true; 
+
     public SemSym(Type type) {
         this.type = type;
 	this.offset = 0;
@@ -30,6 +31,17 @@ public class SemSym {
     {
 	this.offset = offset;
     }
+
+   public boolean isLocal()
+   {
+	return isLocal;
+   }
+
+   public void makeGlobal()
+   {
+	isLocal = false;
+   }
+
 }
 
 /**
