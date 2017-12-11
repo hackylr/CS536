@@ -509,7 +509,7 @@ class FnBodyNode extends ASTnode {
     // 2 kids
     private DeclListNode myDeclList;
     private StmtListNode myStmtList;
-    private int decllistOffSet = 0;
+    private int declListOffSet = 0;
     private int stmtListOffSet = 0;
 }
 
@@ -524,7 +524,7 @@ class StmtListNode extends ASTnode {
      */
     public void nameAnalysis(SymTable symTab) {
         
-	offSet = stmListOffSet;
+	offSet = stmtListOffSet;
 	for (StmtNode node : myStmts) {
             node.setOffSet(offSet);
 	    node.nameAnalysis(symTab);
@@ -565,7 +565,7 @@ class StmtListNode extends ASTnode {
 	return offSet;
     }
 
-    public int setOffSet(int stmtListOffSet) {
+    public void setOffSet(int stmtListOffSet) {
 	this.stmtListOffSet = stmtListOffSet;
     }
 
@@ -1138,6 +1138,8 @@ class StructNode extends TypeNode {
 abstract class StmtNode extends ASTnode {
     abstract public void nameAnalysis(SymTable symTab);
     abstract public void typeCheck(Type retType);
+    public int getOffSet() { return 0; }
+    public void setOffSet(int offSet) { }
 }
 
 class AssignStmtNode extends StmtNode {
@@ -1925,6 +1927,7 @@ abstract class ExpNode extends ASTnode {
     abstract public Type typeCheck();
     abstract public int lineNum();
     abstract public int charNum();
+    public void genJumpCode(PrintWriter p, String trueLab, String falseLab) { }
 }
 
 class IntLitNode extends ExpNode {
@@ -1963,11 +1966,6 @@ class IntLitNode extends ExpNode {
     {
 	generate("li", T0, myIntVal);
 	genPush(T0);
-    }
-
-    public void genJumpCode(String trueLab, String falseLab)
-    {
-
     }
 
     private int myLineNum;
@@ -2063,7 +2061,7 @@ class TrueNode extends ExpNode {
 	genPush(T0);
     }
 
-    public void genJumpCode(String trueLab, String falseLab)
+    public void genJumpCode(PrintWriter p, String trueLab, String falseLab)
     {
 	generate("b", trueLab);
     }
@@ -2109,7 +2107,7 @@ class FalseNode extends ExpNode {
 	genPush(T0);
     }
 
-    public void genJumpCode(String trueLab, String falseLab)
+    public void genJumpCode(PrintWriter p, String trueLab, String falseLab)
     {
 	generate("b", falseLab);
     }
@@ -3076,10 +3074,21 @@ class AndNode extends LogicalExpNode {
         p.print(")");
     }
 
-    //TODO
     public void codeGen(PrintWriter p)
     {
 	String falseLab = nextLabel();
+	//Evaluate the left operand
+	myExp1.codeGen(p);
+	generate("beq", T0, FALSE, falseLab);
+	//Evaluate the right operand if left operand is TRUE
+	myExp2.codeGen(p);
+	genPop(T1);
+	genPop(T0);
+
+	generate("and", T0, T0, T1);
+
+	genPush(T0);
+	genLabel(falseLab);
     }
 
     public void genJumpCode(PrintWriter p, String trueLab, String falseLab)
@@ -3088,7 +3097,6 @@ class AndNode extends LogicalExpNode {
 	myExp1.genJumpCode(p, newLab, falseLab);
 	genLabel(newLab);
 	myExp2.genJumpCode(p, trueLab, falseLab);
-	
     }
 }
 
@@ -3103,6 +3111,32 @@ class OrNode extends LogicalExpNode {
         p.print(" || ");
         myExp2.unparse(p, 0);
         p.print(")");
+    }
+    
+    public void codeGen(PrintWriter p)
+    {
+	String trueLab = nextLabel();
+	//Evaluate the left operand
+	myExp1.codeGen(p);
+	generate("beq", T0, TRUE, trueLab);
+	
+	//Evaluate the right operand if left operand is FALSE
+	myExp2.codeGen(p);
+	genPop(T1);
+	genPop(T0);
+
+	generate("or", T0, T0, T1);
+
+	genPush(T0);
+	genLabel(trueLab);
+    }
+
+    public void genJumpCode(PrintWriter p, String trueLab, String falseLab)
+    {
+	String newLab = nextLabel();
+	myExp1.genJumpCode(p, newLab, falseLab);
+	genLabel(newLab);
+	myExp2.genJumpCode(p, trueLab, falseLab);
     }
 }
 
@@ -3119,7 +3153,6 @@ class EqualsNode extends EqualityExpNode {
         p.print(")");
     }
 
-    //TODO
     public void codeGen(PrintWriter p) 
     {
         // step 1: evaluate both operands
@@ -3129,17 +3162,24 @@ class EqualsNode extends EqualityExpNode {
         // step 2: pop values in T0 and T1
         genPop(T1);
         genPop(T0);
-    
         
-        //Sequence equal to
+        // step 3: check if sequences are equal
 	generate("seq", T0, T0, T1);
     
         // step 4: push result
         genPush(T0);
-
     }
 
-    //TODO genJumpCode
+    public void genJumpCode(PrintWriter p, String trueLab, String falseLab)
+    {
+	myExp1.codeGen(p);
+	myExp2.codeGen(p);
+
+	genPop(T1);
+	genPop(T0);
+	generate("beq", T0, T1, trueLab);
+	generate("b", falseLab);
+    }
 
 }
 
@@ -3166,12 +3206,22 @@ class NotEqualsNode extends EqualityExpNode {
         genPop(T1);
         genPop(T0);
     
-        //Sequence not equal 
+        // step 3: check if sequences aren't equal
         generate("sne", T0, T0, T1);
     
         // step 4: push result
         genPush(T0);
+    }
+    
+    public void genJumpCode(PrintWriter p, String trueLab, String falseLab)
+    {
+	myExp1.codeGen(p);
+	myExp2.codeGen(p);
 
+	genPop(T1);
+	genPop(T0);
+	generate("bne", T0, T1, trueLab);
+	generate("b", falseLab);
     }
 
 }
@@ -3199,15 +3249,23 @@ class LessNode extends RelationalExpNode {
         genPop(T1);
         genPop(T0);
     
-        //strictly less than
+        // step 3: check if sequences are strictly less than
 	generate("slt", T0, T0, T1);
     
         // step 4: push result
         genPush(T0);
-
     }
 
-    //TODO genJumpCode
+    public void genJumpCode(PrintWriter p, String trueLab, String falseLab)
+    {
+	myExp1.codeGen(p);
+	myExp2.codeGen(p);
+
+	genPop(T1);
+	genPop(T0);
+	generate("blt", T0, T1, trueLab);
+	generate("b", falseLab);
+    }
 
 }
 
@@ -3234,7 +3292,7 @@ class GreaterNode extends RelationalExpNode {
         genPop(T1);
         genPop(T0);
     
-        //strictly greater than
+        // step 3: check if sequences are strictly greater than
 	generate("sgt", T0, T0, T1);
     
         // step 4: push result
@@ -3242,7 +3300,16 @@ class GreaterNode extends RelationalExpNode {
 
     }
 
-    //TODO genJumpCode
+    public void genJumpCode(PrintWriter p, String trueLab, String falseLab)
+    {
+	myExp1.codeGen(p);
+	myExp2.codeGen(p);
+
+	genPop(T1);
+	genPop(T0);
+	generate("bgt", T0, T1, trueLab);
+	generate("b", falseLab);
+    }
 
 }
 
@@ -3269,7 +3336,7 @@ class LessEqNode extends RelationalExpNode {
         genPop(T1);
         genPop(T0);
     
-        //strictly less than equal
+        // step 3: check if sequences are strictly less than or equal
 	generate("sle", T0, T0, T1);
     
         // step 4: push result
@@ -3277,7 +3344,16 @@ class LessEqNode extends RelationalExpNode {
 
     }
 
-    //TODO genJumpCode
+    public void genJumpCode(PrintWriter p, String trueLab, String falseLab)
+    {
+	myExp1.codeGen(p);
+	myExp2.codeGen(p);
+
+	genPop(T1);
+	genPop(T0);
+	generate("ble", T0, T1, trueLab);
+	generate("b", falseLab);
+    }
 }
 
 class GreaterEqNode extends RelationalExpNode {
@@ -3303,7 +3379,7 @@ class GreaterEqNode extends RelationalExpNode {
         genPop(T1);
         genPop(T0);
     
-        //strictly greater than equal
+        // step 3: check if sequences are greater than or equal
 	generate("sge", T0, T0, T1);
     
         // step 4: push result
@@ -3311,6 +3387,15 @@ class GreaterEqNode extends RelationalExpNode {
 
     }
 
-    //TODO genJumpCode
+    public void genJumpCode(PrintWriter p, String trueLab, String falseLab)
+    {
+	myExp1.codeGen(p);
+	myExp2.codeGen(p);
+
+	genPop(T1);
+	genPop(T0);
+	generate("bge", T0, T1, trueLab);
+	generate("b", falseLab);
+    }
 
 }
