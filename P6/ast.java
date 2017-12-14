@@ -243,6 +243,8 @@ abstract class ASTnode {
 
     static boolean isLocal = true;
     public int offSet = 0;
+    // create a hashmap to avoid storing the same string lit more than once
+    public HashMap<String, String> strLits = new HashMap<String, String> ();
 }
 
 // **********************************************************************
@@ -884,10 +886,10 @@ class FnDeclNode extends DeclNode {
     {
 	//TODO not sure about .text and globl main
 	initCodegenPrintWriter(p);
-	//generate(".text");
+	generate(".text");
 	if(myId.name().equals("main"))
 	{
-	//	generate(".globl main");
+		generate(".globl main");
 		genLabel("main");
 		genLabel("__start");
 	}
@@ -2035,12 +2037,18 @@ class StringLitNode extends ExpNode {
     public void codeGen(PrintWriter p)
     {
 	initCodegenPrintWriter(p);
-	//String stringLab = nextLabel();
 	generate(".data");
-	String stringLab = nextLabel();
-	generateLabeled(stringLab, ".asciiz", myStrVal);
-	generate(".text");
+	String stringLab;
+	if (strLits.containsKey(myStrVal)) {
+	   stringLab = strLits.get(myStrVal);
+	}
+	else {
+	   stringLab = nextLabel();
+	   generateLabeled(stringLab, ".asciiz", myStrVal);
+	   strLits.put(myStrVal, stringLab);
+	}
 
+	generate(".text");
 	generate("la", T0, stringLab);
 	genPush(T0);
 	
