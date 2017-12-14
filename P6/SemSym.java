@@ -22,12 +22,12 @@ public class SemSym {
         return type.toString();
     }
 
-    public int getOffset()
+    public int getOffSet()
     {
 	return offset; 
     }
 	
-    public void setOffset(int offset)
+    public void setOffSet(int offset)
     {
 	this.offset = offset;
     }

@@ -199,7 +199,7 @@ public class Codegen {
             p.print(arg1);
         }
         if (comment != "") 
-            p.print("\t# " + comment);
+            p.print("\t " + comment);
         p.println();
     }
 

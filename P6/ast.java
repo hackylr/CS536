@@ -114,6 +114,11 @@ abstract class ASTnode {
         for (int k=0; k<indent; k++) p.print(" ");
     }
 
+    public void initCodegenPrintWriter(PrintWriter p)
+    {
+	Codegen.p = p;
+    }
+
     public void codeGen(PrintWriter p){
     }
 
@@ -359,7 +364,6 @@ class DeclListNode extends ASTnode {
         }
     }
 
-    // TODO: Put this in ASTNode
     public int getOffSet() {
 	return offSet;
     }
@@ -415,12 +419,16 @@ class FormalsListNode extends ASTnode {
         return myFormals.size();
     }
     
+
     public void codeGen(PrintWriter p) {
-        int offSet = 8;
+       
+	initCodegenPrintWriter(p); 
+	int offSet = 8;
 	for (FormalDeclNode node : myFormals) {
             offSet += 4;
         }
 	generate("addu", FP, SP, offSet);
+	
     }
 
     public void unparse(PrintWriter p, int indent) {
@@ -582,7 +590,7 @@ class ExpListNode extends ASTnode {
     public ExpListNode(List<ExpNode> S) {
         myExps = S;
     }
-    
+
     public int size() {
         return myExps.size();
     }
@@ -634,6 +642,7 @@ class ExpListNode extends ASTnode {
 
     public void codeGen(PrintWriter p)
     {
+	initCodegenPrintWriter(p);
 	for(ExpNode node : myExps)
 	{
 	    node.codeGen(p);
@@ -752,6 +761,7 @@ class VarDeclNode extends DeclNode {
 
     public void codeGen(PrintWriter p)
     {
+	initCodegenPrintWriter(p);
 	if (!isLocal) {
 	   generate(".data");
 	   generate(".align 2");
@@ -830,7 +840,6 @@ class FnDeclNode extends DeclNode {
         symTab.addScope();  // add a new scope for locals and params
        
 	isLocal = true;
-	//TODO What's the offset?
 	myFormalsList.setOffSet(0);
         List<Type> typeList = myFormalsList.nameAnalysis(symTab);
         
@@ -838,7 +847,7 @@ class FnDeclNode extends DeclNode {
             sym.addFormals(typeList);
         }
         
-	myBody.setOffSet(-myFormalsList.length()*4 - 8);
+	myBody.setOffSet(myFormalsList.length()*4*(-1) - 8);
         myBody.nameAnalysis(symTab); // process the function body
         
         try {
@@ -873,10 +882,12 @@ class FnDeclNode extends DeclNode {
 
     public void codeGen(PrintWriter p)
     {
-	generate(".text");
+	//TODO not sure about .text and globl main
+	initCodegenPrintWriter(p);
+	//generate(".text");
 	if(myId.name().equals("main"))
 	{
-		generate(".globl main");
+	//	generate(".globl main");
 		genLabel("main");
 		genLabel("__start");
 	}
@@ -888,6 +899,11 @@ class FnDeclNode extends DeclNode {
 
 	genPush(RA);
 	genPush(FP);
+
+	//TODO
+	myFormalsList.codeGen(p);
+        //generate("addu", FP, SP, myFormalsList.length()*4 + 8);	
+	//generateWithComment("subu", "Function finished", SP, SP, new Integer(myBody.getSize()).toString() );
 
 	String myReturn = nextLabel();
         myBody.codeGen(p, myReturn);
@@ -1227,8 +1243,9 @@ class PostIncStmtNode extends StmtNode {
 
     public void codeGen(PrintWriter p)
     {
+	initCodegenPrintWriter(p);
 	myExp.codeGen(p);
-	((IdNode)myExp).genAddr();
+	((IdNode)myExp).genAddr(p);
 	genPop(T1);
 	genPop(T0);
 	generate("add", T0, T0, 1);
@@ -1288,8 +1305,9 @@ class PostDecStmtNode extends StmtNode {
     
     public void codeGen(PrintWriter p)
     {
+	initCodegenPrintWriter(p);	
 	myExp.codeGen(p);
-	((IdNode)myExp).genAddr();
+	((IdNode)myExp).genAddr(p);
 	genPop(T1);
 	genPop(T0);
 	generate("sub", T0, T0, 1);
@@ -1362,13 +1380,18 @@ class ReadStmtNode extends StmtNode {
     //TODO
     public void codeGen(PrintWriter p)
     {
-	((IdNode)myExp).genAddr();
+	initCodegenPrintWriter(p);
+	((IdNode)myExp).genAddr(p);
 	generate("li", V0, 5);
 	generate ("syscall");
 
 	generateIndexed("lw", T0, SP, 4);
 	
 	//TODO for the isBoolType nonsense
+	if(((IdNode)myExp).sym().getType().isBoolType())
+	{
+		generate("sne", V0, V0, "0");
+	}
 
 	generateIndexed("sw", V0, T0, 0);
 	genPop(V0);
@@ -1411,24 +1434,24 @@ class WriteStmtNode extends StmtNode {
      * typeCheck
      */
     public void typeCheck(Type retType) {
-        Type type = myExp.typeCheck();
+        typeVar = myExp.typeCheck();
         
-        if (type.isFnType()) {
+        if (typeVar.isFnType()) {
             ErrMsg.fatal(myExp.lineNum(), myExp.charNum(),
                          "Attempt to write a function");
         }
         
-        if (type.isStructDefType()) {
+        if (typeVar.isStructDefType()) {
             ErrMsg.fatal(myExp.lineNum(), myExp.charNum(),
                          "Attempt to write a struct name");
         }
         
-        if (type.isStructType()) {
+        if (typeVar.isStructType()) {
             ErrMsg.fatal(myExp.lineNum(), myExp.charNum(),
                          "Attempt to write a struct variable");
         }
         
-        if (type.isVoidType()) {
+        if (typeVar.isVoidType()) {
             ErrMsg.fatal(myExp.lineNum(), myExp.charNum(),
                          "Attempt to write void");
         }
@@ -1441,9 +1464,9 @@ class WriteStmtNode extends StmtNode {
         p.println(";");
     }
     
-     //TODO
     public void codeGen(PrintWriter p)
     {
+	initCodegenPrintWriter(p);
 	myExp.codeGen(p);
 	genPop(A0);
 	
@@ -1647,6 +1670,7 @@ class IfElseStmtNode extends StmtNode {
 
     public void codeGen(PrintWriter p)
     {
+	initCodegenPrintWriter(p);
 	String trueLab = nextLabel();
 	String falseLab = nextLabel();
    	String doneLab = nextLabel();
@@ -1886,6 +1910,7 @@ class ReturnStmtNode extends StmtNode {
 
     public void codeGen(PrintWriter p, String myReturn)
     {
+	initCodegenPrintWriter(p);
 	if(myExp != null)
 	{
 		myExp.codeGen(p);
@@ -1928,6 +1953,7 @@ abstract class ExpNode extends ASTnode {
     abstract public int lineNum();
     abstract public int charNum();
     public void genJumpCode(PrintWriter p, String trueLab, String falseLab) { }
+    public void genJumpAndLink(PrintWriter p) { }
 }
 
 class IntLitNode extends ExpNode {
@@ -1964,6 +1990,7 @@ class IntLitNode extends ExpNode {
 
     public void codeGen(PrintWriter p)
     {
+	initCodegenPrintWriter(p);
 	generate("li", T0, myIntVal);
 	genPush(T0);
     }
@@ -2005,13 +2032,13 @@ class StringLitNode extends ExpNode {
         p.print(myStrVal);
     }
  
-    //TODO
     public void codeGen(PrintWriter p)
     {
-	Codegen.p = p;
-	String stringLab = nextLabel();
+	initCodegenPrintWriter(p);
+	//String stringLab = nextLabel();
 	generate(".data");
-	generate(stringLab + ".aciiz " + myStrVal);
+	String stringLab = nextLabel();
+	generateLabeled(stringLab, ".asciiz", myStrVal);
 	generate(".text");
 
 	generate("la", T0, stringLab);
@@ -2057,12 +2084,14 @@ class TrueNode extends ExpNode {
 
     public void codeGen(PrintWriter p)
     {
+	initCodegenPrintWriter(p);
 	generate("li", T0, TRUE);
 	genPush(T0);
     }
 
     public void genJumpCode(PrintWriter p, String trueLab, String falseLab)
     {
+	initCodegenPrintWriter(p);
 	generate("b", trueLab);
     }
 
@@ -2103,12 +2132,14 @@ class FalseNode extends ExpNode {
 
     public void codeGen(PrintWriter p)
     {
+	initCodegenPrintWriter(p);
 	generate("li", T0, FALSE);
 	genPush(T0);
     }
 
     public void genJumpCode(PrintWriter p, String trueLab, String falseLab)
     {
+	initCodegenPrintWriter(p);
 	generate("b", falseLab);
     }
 
@@ -2194,11 +2225,9 @@ class IdNode extends ExpNode {
         }
     }
 
-
-    //TODO ALL CODEGEN methods
-    
-    public void genJumpAndLink()
+    public void genJumpAndLink(PrintWriter p)
     {
+	initCodegenPrintWriter(p);
 	if(myStrVal.equals("main")) {
 	    generate("jal", "main");
 	}
@@ -2210,6 +2239,7 @@ class IdNode extends ExpNode {
 
     public void codeGen(PrintWriter p)
     {
+	initCodegenPrintWriter(p);
 	if(mySym.isLocal())
 	{
 	    generateIndexed("lw", T0, FP, mySym.getOffSet());
@@ -2220,8 +2250,9 @@ class IdNode extends ExpNode {
 	}
     }
 
-    public void genAddr()
+    public void genAddr(PrintWriter p)
     {
+	initCodegenPrintWriter(p);
 	if(mySym.isLocal())
 	{
 		generateIndexed("la", T0, FP, mySym.getOffSet());
@@ -2236,6 +2267,7 @@ class IdNode extends ExpNode {
 
     public void genJumpCode(PrintWriter p, String trueLab, String falseLab)
     {
+	initCodegenPrintWriter(p);
 	if(mySym.isLocal())
 	{
 		generateIndexed("lw", T0, FP, mySym.getOffSet());
@@ -2496,11 +2528,11 @@ class AssignNode extends ExpNode {
         if (indent != -1)  p.print(")");
     }
 
-    //TODO codeGen and genJumpCode
     public void codeGen(PrintWriter p)
     {
+	initCodegenPrintWriter(p);
 	myExp.codeGen(p);
-	((IdNode)myLhs).genAddr();
+	((IdNode)myLhs).genAddr(p);
 	genPop(T0);
 	generateIndexed("lw", T1, SP, 4);
 	generateIndexed("sw", T1, T0, 0);
@@ -2508,8 +2540,9 @@ class AssignNode extends ExpNode {
 
     public void genJumpCode(PrintWriter p, String trueLab, String falseLab)
     {
+	initCodegenPrintWriter(p);
 	myExp.codeGen(p);
-	((IdNode)myLhs).genAddr();
+	((IdNode)myLhs).genAddr(p);
 	genPop(T0);
 	genPop(T1);
 	generateIndexed("sw", T1, SP, 0);
@@ -2599,15 +2632,17 @@ class CallExpNode extends ExpNode {
 
     public void codeGen(PrintWriter p)
     {
+	initCodegenPrintWriter(p);
 	myExpList.codeGen(p);
-	myId.genJumpAndLink();
+	myId.genJumpAndLink(p);
 	genPush(V0);
     }
 
     public void genJumpCode(PrintWriter p, String trueLab, String falseLab)
     {
+	initCodegenPrintWriter(p);
 	myExpList.codeGen(p);
-	myId.genJumpAndLink();
+	myId.genJumpAndLink(p);
 	generate("beq", V0, "0", falseLab);
 	generate("b", trueLab);
     }
@@ -2724,6 +2759,7 @@ class UnaryMinusNode extends UnaryExpNode {
 
     public void codeGen(PrintWriter p)
     {
+	initCodegenPrintWriter(p);
 	myExp.codeGen(p);
 	genPop(T0);
 	generate("sub", T0, "0", T0);
@@ -2764,6 +2800,7 @@ class NotNode extends UnaryExpNode {
 
     public void codeGen(PrintWriter p)
     {
+	initCodegenPrintWriter(p);
 	myExp.codeGen(p);
 	genPop(T0);
 	generate("xor", T0, T0, TRUE);
@@ -2946,7 +2983,8 @@ class PlusNode extends ArithmeticExpNode {
 
     public void codeGen(PrintWriter p) 
     {
-        // step 1: evaluate both operands
+       	initCodegenPrintWriter(p);
+	// step 1: evaluate both operands
         myExp1.codeGen(p);
         myExp2.codeGen(p);
 
@@ -2977,7 +3015,8 @@ class MinusNode extends ArithmeticExpNode {
     }
     public void codeGen(PrintWriter p) 
     {
-        // step 1: evaluate both operands
+       	initCodegenPrintWriter(p);
+	// step 1: evaluate both operands
         myExp1.codeGen(p);
         myExp2.codeGen(p);
 
@@ -3010,7 +3049,8 @@ class TimesNode extends ArithmeticExpNode {
     }
     public void codeGen(PrintWriter p) 
     {
-        // step 1: evaluate both operands
+       	initCodegenPrintWriter(p);
+	// step 1: evaluate both operands
         myExp1.codeGen(p);
         myExp2.codeGen(p);
 
@@ -3043,7 +3083,8 @@ class DivideNode extends ArithmeticExpNode {
 
     public void codeGen(PrintWriter p) 
     {
-        // step 1: evaluate both operands
+        initCodegenPrintWriter(p);
+	// step 1: evaluate both operands
         myExp1.codeGen(p);
         myExp2.codeGen(p);
 
@@ -3076,6 +3117,7 @@ class AndNode extends LogicalExpNode {
 
     public void codeGen(PrintWriter p)
     {
+	initCodegenPrintWriter(p);
 	String falseLab = nextLabel();
 	//Evaluate the left operand
 	myExp1.codeGen(p);
@@ -3115,6 +3157,7 @@ class OrNode extends LogicalExpNode {
     
     public void codeGen(PrintWriter p)
     {
+	initCodegenPrintWriter(p);
 	String trueLab = nextLabel();
 	//Evaluate the left operand
 	myExp1.codeGen(p);
@@ -3155,7 +3198,8 @@ class EqualsNode extends EqualityExpNode {
 
     public void codeGen(PrintWriter p) 
     {
-        // step 1: evaluate both operands
+       	initCodegenPrintWriter(p);
+	// step 1: evaluate both operands
         myExp1.codeGen(p);
         myExp2.codeGen(p);
 
@@ -3172,6 +3216,7 @@ class EqualsNode extends EqualityExpNode {
 
     public void genJumpCode(PrintWriter p, String trueLab, String falseLab)
     {
+	initCodegenPrintWriter(p);
 	myExp1.codeGen(p);
 	myExp2.codeGen(p);
 
@@ -3198,7 +3243,8 @@ class NotEqualsNode extends EqualityExpNode {
 
     public void codeGen(PrintWriter p) 
     {
-        // step 1: evaluate both operands
+        initCodegenPrintWriter(p);
+	// step 1: evaluate both operands
         myExp1.codeGen(p);
         myExp2.codeGen(p);
 
@@ -3215,6 +3261,7 @@ class NotEqualsNode extends EqualityExpNode {
     
     public void genJumpCode(PrintWriter p, String trueLab, String falseLab)
     {
+	initCodegenPrintWriter(p);
 	myExp1.codeGen(p);
 	myExp2.codeGen(p);
 
@@ -3241,7 +3288,8 @@ class LessNode extends RelationalExpNode {
 
     public void codeGen(PrintWriter p) 
     {
-        // step 1: evaluate both operands
+        initCodegenPrintWriter(p);
+	// step 1: evaluate both operands
         myExp1.codeGen(p);
         myExp2.codeGen(p);
 
@@ -3258,6 +3306,7 @@ class LessNode extends RelationalExpNode {
 
     public void genJumpCode(PrintWriter p, String trueLab, String falseLab)
     {
+	initCodegenPrintWriter(p);
 	myExp1.codeGen(p);
 	myExp2.codeGen(p);
 
@@ -3284,7 +3333,8 @@ class GreaterNode extends RelationalExpNode {
 
     public void codeGen(PrintWriter p) 
     {
-        // step 1: evaluate both operands
+        initCodegenPrintWriter(p);
+	// step 1: evaluate both operands
         myExp1.codeGen(p);
         myExp2.codeGen(p);
 
@@ -3302,6 +3352,7 @@ class GreaterNode extends RelationalExpNode {
 
     public void genJumpCode(PrintWriter p, String trueLab, String falseLab)
     {
+	initCodegenPrintWriter(p);
 	myExp1.codeGen(p);
 	myExp2.codeGen(p);
 
@@ -3328,7 +3379,8 @@ class LessEqNode extends RelationalExpNode {
 
     public void codeGen(PrintWriter p) 
     {
-        // step 1: evaluate both operands
+        initCodegenPrintWriter(p);
+	// step 1: evaluate both operands
         myExp1.codeGen(p);
         myExp2.codeGen(p);
 
@@ -3346,6 +3398,7 @@ class LessEqNode extends RelationalExpNode {
 
     public void genJumpCode(PrintWriter p, String trueLab, String falseLab)
     {
+        initCodegenPrintWriter(p);
 	myExp1.codeGen(p);
 	myExp2.codeGen(p);
 
@@ -3371,7 +3424,8 @@ class GreaterEqNode extends RelationalExpNode {
 
     public void codeGen(PrintWriter p) 
     {
-        // step 1: evaluate both operands
+        initCodegenPrintWriter(p);
+	// step 1: evaluate both operands
         myExp1.codeGen(p);
         myExp2.codeGen(p);
 
@@ -3389,6 +3443,7 @@ class GreaterEqNode extends RelationalExpNode {
 
     public void genJumpCode(PrintWriter p, String trueLab, String falseLab)
     {
+        initCodegenPrintWriter(p);
 	myExp1.codeGen(p);
 	myExp2.codeGen(p);
 
