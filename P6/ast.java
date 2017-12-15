@@ -323,7 +323,7 @@ class DeclListNode extends ASTnode {
 		if(isLocal)
 		{
 			((VarDeclNode)node).setIdOffSet(offSet);
-			offSet -= 4;
+			offSet = offSet - 4;
 		}
 
 		else
@@ -405,7 +405,7 @@ class FormalsListNode extends ASTnode {
 	for (FormalDeclNode node : myFormals) {
             SemSym symVar = node.nameAnalysis(symTab);
 	    node.setIdOffSet(offSet);
-	    offSet -= 4;
+	    offSet = offSet - 4;
 
 	    if (symVar != null) {          
 		typeList.add(symVar.getType());
@@ -839,8 +839,7 @@ class FnDeclNode extends DeclNode {
             }
         }
         
-        symTab.addScope();  // add a new scope for locals and params
-       
+        symTab.addScope();
 	isLocal = true;
 	myFormalsList.setOffSet(0);
         List<Type> typeList = myFormalsList.nameAnalysis(symTab);
@@ -848,18 +847,16 @@ class FnDeclNode extends DeclNode {
 	if (sym != null) {
             sym.addFormals(typeList);
         }
-        
 	myBody.setOffSet(myFormalsList.length()*4*(-1) - 8);
-        myBody.nameAnalysis(symTab); // process the function body
+        myBody.nameAnalysis(symTab);       
         
-        try {
-            symTab.removeScope();  // exit scope
+	try {
+            symTab.removeScope();
         } catch (EmptySymTableException ex) {
             System.err.println("Unexpected EmptySymTableException " +
                                " in FnDeclNode.nameAnalysis");
             System.exit(-1);
         }
-        
         return null;
     } 
        
@@ -3073,9 +3070,11 @@ class AndNode extends LogicalExpNode {
     {
 	initCodegenPrintWriter(p);
 	String falseLab = nextLabel();
+	
 	//Evaluate the left operand
 	myExp1.codeGen(p);
 	generate("beq", T0, FALSE, falseLab);
+	
 	//Evaluate the right operand if left operand is TRUE
 	myExp2.codeGen(p);
 	genPop(T1);
@@ -3113,6 +3112,7 @@ class OrNode extends LogicalExpNode {
     {
 	initCodegenPrintWriter(p);
 	String trueLab = nextLabel();
+	
 	//Evaluate the left operand
 	myExp1.codeGen(p);
 	generate("beq", T0, TRUE, trueLab);
