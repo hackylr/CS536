@@ -884,7 +884,6 @@ class FnDeclNode extends DeclNode {
 
     public void codeGen(PrintWriter p)
     {
-	//TODO not sure about .text and globl main
 	initCodegenPrintWriter(p);
 	generate(".text");
 	if(myId.name().equals("main"))
@@ -901,11 +900,8 @@ class FnDeclNode extends DeclNode {
 
 	genPush(RA);
 	genPush(FP);
-
-	//TODO
+	
 	myFormalsList.codeGen(p);
-        //generate("addu", FP, SP, myFormalsList.length()*4 + 8);	
-	//generateWithComment("subu", "Function finished", SP, SP, new Integer(myBody.getSize()).toString() );
 
 	String myReturn = nextLabel();
         myBody.codeGen(p, myReturn);
@@ -1158,6 +1154,7 @@ abstract class StmtNode extends ASTnode {
     abstract public void typeCheck(Type retType);
     public int getOffSet() { return 0; }
     public void setOffSet(int offSet) { }
+    public int getSize() { return 0; }
 }
 
 class AssignStmtNode extends StmtNode {
@@ -1200,11 +1197,6 @@ class AssignStmtNode extends StmtNode {
     public int getOffSet()
     {
 	return assignOffSet;
-    }
-
-    public int getSize()
-    {
-	return 0;
     }
 
     // 1 kid
@@ -1264,11 +1256,6 @@ class PostIncStmtNode extends StmtNode {
 	return incOffSet;
     }
 
-    public int getSize()
-    {
-	return 0;
-    }
-
     // 1 kid
     private ExpNode myExp;
     private int incOffSet;
@@ -1326,11 +1313,6 @@ class PostDecStmtNode extends StmtNode {
 	return decOffSet;
     }
 
-    public int getSize()
-    {
-	return 0;
-    }
-
     // 1 kid
     private ExpNode myExp;
     private int decOffSet;
@@ -1379,7 +1361,6 @@ class ReadStmtNode extends StmtNode {
     
     }
 
-    //TODO
     public void codeGen(PrintWriter p)
     {
 	initCodegenPrintWriter(p);
@@ -1388,13 +1369,6 @@ class ReadStmtNode extends StmtNode {
 	generate ("syscall");
 
 	generateIndexed("lw", T0, SP, 4);
-	
-	//TODO for the isBoolType nonsense
-	if(((IdNode)myExp).sym().getType().isBoolType())
-	{
-		generate("sne", V0, V0, "0");
-	}
-
 	generateIndexed("sw", V0, T0, 0);
 	genPop(V0);
     }
@@ -1407,11 +1381,6 @@ class ReadStmtNode extends StmtNode {
     public void setOffSet(int readOffSet)
     {
 	this.readOffSet = readOffSet;
-    }
-
-    public int getSize()
-    {
-	return 0;
     }
 
     // 1 kid (actually can only be an IdNode or an ArrayExpNode)
@@ -1495,11 +1464,6 @@ class WriteStmtNode extends StmtNode {
 	this.writeOffSet = writeOffSet;
     }
 	
-    public int getSize()
-    {
-	return 0;
-    }
-
     // 1 kid
     private ExpNode myExp;
     private int writeOffSet;
@@ -1687,7 +1651,6 @@ class IfElseStmtNode extends StmtNode {
 	genLabel(doneLab);
     }
 
-    //TODO, not sure about what to return exactly for getOffSet()
     public int getOffSet()
     {
 	return myElseStmtList.getOffSet();
@@ -1782,7 +1745,6 @@ class WhileStmtNode extends StmtNode {
 	genLabel(doneLab);
     }
 
-    //TODO, not sure about what to return exactly for getOffSet()
     public int getOffSet()
     {
 	return myStmtList.getOffSet();
@@ -1791,11 +1753,6 @@ class WhileStmtNode extends StmtNode {
     public void setOffSet(int whileOffSet)
     {
 	this.whileOffSet = whileOffSet;
-    }
-
-    public int getSize()
-    {
-	return 0;
     }
 
     // 3 kids
@@ -1846,12 +1803,6 @@ class CallStmtNode extends StmtNode {
     {
 	this.callOffSet = callOffSet;
     }
-
-    public int getSize()
-    {
-	return 0;
-    }
-
 
     // 1 kid
     private CallExpNode myCall;
@@ -1929,11 +1880,6 @@ class ReturnStmtNode extends StmtNode {
     public void setOffSet(int returnOffSet)
     {
 	this.returnOffSet = returnOffSet;
-    }
-
-    public int getSize()
-    {
-	return 0;
     }
 
     // 1 kid

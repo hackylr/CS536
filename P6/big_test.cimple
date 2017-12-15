@@ -1,0 +1,21 @@
+int test_fancy_function(int x, bool y){
+	x--;
+	y = !y;
+	cout << "\nfancy function(";
+	cout << x;
+	cout << ", ";
+	cout << y;
+	cout << ")";
+
+	if(x > 0){
+		test_fancy_function(x, y);
+	}
+	return x;
+}
+
+void main(){
+	int x = 0;
+	bool y = false;
+	test_fancy_function(x, y);
+	cout << "Success";
+}
